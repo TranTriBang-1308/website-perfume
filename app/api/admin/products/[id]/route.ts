@@ -22,12 +22,28 @@ export async function PATCH(req: Request, context: RouteContext) {
     );
   }
 
-  const { images: _ignored, ...data } = parsed.data;
+  const { images, ...data } = parsed.data;
   try {
-    const product = await prisma.product.update({
-      where: { id },
-      data,
-      include: { images: true },
+    const product = await prisma.$transaction(async (tx) => {
+      if (images !== undefined) {
+        // Đồng bộ toàn bộ ảnh: xóa cũ, tạo lại theo thứ tự form gửi lên
+        await tx.productImage.deleteMany({ where: { productId: id } });
+        if (images.length > 0) {
+          await tx.productImage.createMany({
+            data: images.map((img, i) => ({
+              productId: id,
+              url: img.url,
+              alt: img.alt,
+              position: i,
+            })),
+          });
+        }
+      }
+      return tx.product.update({
+        where: { id },
+        data,
+        include: { images: { orderBy: { position: "asc" } } },
+      });
     });
     revalidateTag("products", "max");
     return NextResponse.json({ data: product, message: "Đã cập nhật" });

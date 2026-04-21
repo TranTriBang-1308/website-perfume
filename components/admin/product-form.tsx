@@ -9,6 +9,7 @@ import { slugify } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/form-field";
+import { CloudinaryUpload } from "@/components/admin/cloudinary-upload";
 
 type Props = {
   productId?: string;
@@ -234,14 +235,19 @@ export function ProductForm({ productId, initialValues, brands, categories }: Pr
             </Button>
           </div>
         ))}
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => append({ url: "", alt: "" })}
-        >
-          + Thêm ảnh
-        </Button>
+        <div className="flex flex-wrap items-center gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => append({ url: "", alt: "" })}
+          >
+            + Thêm ảnh (dán URL)
+          </Button>
+          <CloudinaryUpload
+            onUploaded={(url) => append({ url, alt: "" })}
+          />
+        </div>
       </fieldset>
 
       <fieldset className="space-y-3 border border-[color:var(--color-border-soft)] bg-white p-6">
