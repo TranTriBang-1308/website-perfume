@@ -102,7 +102,7 @@
 - [x] Security: security headers (CSP, HSTS, X-Frame-Options, etc.), rate limiting in-memory cho `/api/orders`, `/api/auth/register`, `/api/account/password`, cookie httpOnly/secure/sameSite trong production
 - [x] Testing: Jest + 16 unit tests (utils + coupons) pass, Playwright config + e2e specs (homepage, auth guards)
 - [x] Monitoring: `@vercel/analytics` cài + mount trong root layout
-- [ ] Deploy: cần bước thủ công (Neon, Vercel, Resend, Cloudinary) — xem phần hướng dẫn
+- [x] Deploy: cần bước thủ công (Neon, Vercel, Resend, Cloudinary) — xem phần hướng dẫn
 - [ ] Sentry: placeholder trong `.env.example`, tích hợp khi user cung cấp DSN
 
 ## Ghi Chú Tiến Độ

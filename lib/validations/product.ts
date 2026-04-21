@@ -49,9 +49,7 @@ export const productCreateSchema = z.object({
     .optional(),
 });
 
-export const productUpdateSchema = productCreateSchema.partial().extend({
-  id: z.string().cuid(),
-});
+export const productUpdateSchema = productCreateSchema.partial();
 
 export const productImageSchema = z.object({
   url: z.string().url("URL ảnh không hợp lệ"),
