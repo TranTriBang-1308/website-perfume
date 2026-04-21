@@ -125,7 +125,14 @@ export function ProductForm({ productId, initialValues, brands, categories }: Pr
             <Input id="price" type="number" step="1000" {...register("price", { valueAsNumber: true })} />
           </FormField>
           <FormField label="Giá gốc (VND)" htmlFor="compareAtPrice" error={(errors.compareAtPrice as any)?.message}>
-            <Input id="compareAtPrice" type="number" step="1000" {...register("compareAtPrice", { valueAsNumber: true })} />
+            <Input
+              id="compareAtPrice"
+              type="number"
+              step="1000"
+              {...register("compareAtPrice", {
+                setValueAs: (v) => (v === "" || v === null || v === undefined ? undefined : Number(v)),
+              })}
+            />
           </FormField>
         </div>
 

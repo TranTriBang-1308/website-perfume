@@ -57,12 +57,6 @@ export const productImageSchema = z.object({
   position: z.number().int().nonnegative().default(0),
 });
 
-export const productToggleSchema = z.object({
-  isActive: z.boolean().optional(),
-  isFeatured: z.boolean().optional(),
-});
-
 export type ProductCreateInput = z.infer<typeof productCreateSchema>;
 export type ProductUpdateInput = z.infer<typeof productUpdateSchema>;
 export type ProductImageInput = z.infer<typeof productImageSchema>;
-export type ProductToggleInput = z.infer<typeof productToggleSchema>;
