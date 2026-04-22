@@ -29,6 +29,8 @@ export async function listProducts(query: ProductQuery) {
         ...(query.maxPrice !== undefined && { lte: query.maxPrice }),
       },
     }),
+    // Chỉ lấy sản phẩm đang giảm giá (có giá gốc để so sánh)
+    ...(query.onSale && { compareAtPrice: { not: null } }),
   };
 
   const [total, products] = await prisma.$transaction([

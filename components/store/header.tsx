@@ -51,8 +51,8 @@ function HeaderIconLink({
 
 const navLinks: Array<{ href: string; label: string; accent?: boolean }> = [
   { href: "/products", label: "TƯ VẤN CHỌN" },
-  { href: "/products?sort=featured", label: "HOT DEALS", accent: true },
-  { href: "/products", label: "THƯƠNG HIỆU" },
+  { href: "/products?onSale=true&sort=price-asc", label: "HOT DEALS", accent: true },
+  { href: "/brands", label: "THƯƠNG HIỆU" },
   { href: "/products?gender=MALE", label: "NƯỚC HOA NAM" },
   { href: "/products?gender=FEMALE", label: "NƯỚC HOA NỮ" },
   { href: "/products?gender=UNISEX", label: "NƯỚC HOA UNISEX" },
@@ -159,13 +159,22 @@ export async function Header() {
             <li key={link.label} className="shrink-0">
               <Link
                 href={link.href}
-                className={
+                className={`group relative inline-block py-1 transition-colors ${
                   link.accent
-                    ? "text-burgundy hover:opacity-80"
+                    ? "text-burgundy hover:text-burgundy"
                     : "text-ink-muted hover:text-ink"
-                }
+                }`}
               >
-                {link.label}
+                <span className="relative">
+                  {link.label}
+                  {/* Gạch chân sang trọng: bung ra từ giữa, dùng champagne cho mục thường, burgundy cho Hot Deals */}
+                  <span
+                    aria-hidden="true"
+                    className={`pointer-events-none absolute -bottom-1 left-1/2 h-px w-0 -translate-x-1/2 transition-all duration-500 ease-out group-hover:w-full ${
+                      link.accent ? "bg-burgundy" : "bg-champagne"
+                    }`}
+                  />
+                </span>
               </Link>
             </li>
           ))}

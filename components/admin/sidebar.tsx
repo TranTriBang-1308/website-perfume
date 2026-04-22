@@ -11,6 +11,7 @@ const items = [
   { href: "/admin/users", label: "Người dùng" },
   { href: "/admin/brands", label: "Thương hiệu" },
   { href: "/admin/categories", label: "Danh mục" },
+  { href: "/admin/banners", label: "Banner Hero" },
   { href: "/admin/coupons", label: "Mã giảm giá" },
   { href: "/admin/reports", label: "Báo cáo" },
 ];

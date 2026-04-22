@@ -12,6 +12,10 @@ export const productQuerySchema = z.object({
   concentration: z.enum(CONCENTRATIONS).optional(),
   minPrice: z.coerce.number().nonnegative().optional(),
   maxPrice: z.coerce.number().positive().optional(),
+  onSale: z
+    .union([z.boolean(), z.literal("true"), z.literal("false"), z.literal("1"), z.literal("0")])
+    .transform((v) => v === true || v === "true" || v === "1")
+    .optional(),
   sort: z.enum(SORT_OPTIONS).default("newest"),
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().positive().max(48).default(12),
