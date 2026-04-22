@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { productCreateSchema, type ProductCreateInput } from "@/lib/validations/product";
 import { slugify } from "@/lib/utils";
@@ -64,6 +64,7 @@ export function ProductForm({ productId, initialValues, brands, categories }: Pr
       isActive: initialValues?.isActive ?? true,
       brandId: initialValues?.brandId ?? "",
       categoryId: initialValues?.categoryId ?? "",
+      images: initialValues?.images ?? [],
     },
   });
 
@@ -71,6 +72,10 @@ export function ProductForm({ productId, initialValues, brands, categories }: Pr
     control,
     name: "images",
   });
+
+  const watchedImages = useWatch({ control, name: "images" }) as
+    | Array<{ url?: string; alt?: string }>
+    | undefined;
 
   const onNameBlur = () => {
     const name = getValues("name");
@@ -220,21 +225,34 @@ export function ProductForm({ productId, initialValues, brands, categories }: Pr
 
       <fieldset className="space-y-4 border border-[color:var(--color-border-soft)] bg-white p-6">
         <legend className="text-sm font-medium">Ảnh sản phẩm</legend>
-        {fields.map((field, i) => (
-          <div key={field.id} className="flex gap-3 items-end border-b border-[color:var(--color-border-soft)] pb-3">
-            <div className="flex-1 space-y-2">
-              <label className="text-xs uppercase tracking-widest text-ink-muted">URL ảnh {i + 1}</label>
-              <Input {...register(`images.${i}.url`)} placeholder="https://..." />
+        {fields.map((field, i) => {
+          const url = watchedImages?.[i]?.url;
+          return (
+            <div key={field.id} className="flex gap-3 items-end border-b border-[color:var(--color-border-soft)] pb-3">
+              {url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={url}
+                  alt={watchedImages?.[i]?.alt ?? ""}
+                  className="h-20 w-20 shrink-0 object-cover border border-[color:var(--color-border-soft)]"
+                />
+              ) : (
+                <div className="h-20 w-20 shrink-0 border border-dashed border-[color:var(--color-border-soft)] bg-gray-50" />
+              )}
+              <div className="flex-1 space-y-2">
+                <label className="text-xs uppercase tracking-widest text-ink-muted">URL ảnh {i + 1}</label>
+                <Input {...register(`images.${i}.url`)} placeholder="https://..." />
+              </div>
+              <div className="flex-1">
+                <label className="text-xs uppercase tracking-widest text-ink-muted">Alt text</label>
+                <Input {...register(`images.${i}.alt`)} placeholder="Mô tả ảnh" />
+              </div>
+              <Button type="button" variant="outline" size="sm" onClick={() => remove(i)}>
+                Xóa
+              </Button>
             </div>
-            <div className="flex-1">
-              <label className="text-xs uppercase tracking-widest text-ink-muted">Alt text</label>
-              <Input {...register(`images.${i}.alt`)} placeholder="Mô tả ảnh" />
-            </div>
-            <Button type="button" variant="outline" size="sm" onClick={() => remove(i)}>
-              Xóa
-            </Button>
-          </div>
-        ))}
+          );
+        })}
         <div className="flex flex-wrap items-center gap-3">
           <Button
             type="button"
