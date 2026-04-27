@@ -81,14 +81,14 @@ export default async function BrandsPage() {
                         href={`/products?brand=${b.slug}`}
                         className="group flex flex-col overflow-hidden border border-[color:var(--color-border-soft)] bg-white transition-colors hover:border-ink"
                       >
-                        <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden bg-cream p-6">
+                        <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden bg-white">
                           {b.logo ? (
                             <Image
                               src={b.logo}
                               alt={b.name}
                               fill
                               sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
-                              className="object-contain p-8 transition-transform duration-500 group-hover:scale-105"
+                              className="object-contain p-4 transition-transform duration-500 group-hover:scale-105 sm:p-6"
                             />
                           ) : (
                             <span className="font-display text-3xl text-ink transition-colors group-hover:text-champagne">
