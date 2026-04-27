@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { getFeaturedProducts, getBrandsAndCategories } from "@/lib/queries/products";
 import { getActiveBanners } from "@/lib/queries/banners";
 import { ProductCard } from "@/components/store/product-card";
@@ -83,9 +84,21 @@ export default async function HomePage() {
               <Link
                 key={brand.id}
                 href={`/products?brand=${brand.slug}`}
-                className="flex aspect-square items-center justify-center border border-[color:var(--color-border-soft)] bg-white font-display text-xl transition-colors hover:bg-ink hover:text-white"
+                className="group relative flex aspect-square items-center justify-center overflow-hidden border border-[color:var(--color-border-soft)] bg-white transition-colors hover:border-ink"
               >
-                {brand.name}
+                {brand.logo ? (
+                  <Image
+                    src={brand.logo}
+                    alt={brand.name}
+                    fill
+                    sizes="(min-width: 640px) 25vw, 50vw"
+                    className="object-contain p-4 transition-transform duration-500 group-hover:scale-105 sm:p-6"
+                  />
+                ) : (
+                  <span className="font-display text-xl text-ink transition-colors group-hover:text-champagne">
+                    {brand.name}
+                  </span>
+                )}
               </Link>
             ))}
           </div>

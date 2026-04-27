@@ -175,7 +175,7 @@ export async function getRelatedProducts(params: {
 export const getBrandsAndCategories = unstable_cache(
   async () => {
     const [brands, categories] = await prisma.$transaction([
-      prisma.brand.findMany({ select: { id: true, name: true, slug: true }, orderBy: { name: "asc" } }),
+      prisma.brand.findMany({ select: { id: true, name: true, slug: true, logo: true }, orderBy: { name: "asc" } }),
       prisma.category.findMany({
         select: { id: true, name: true, slug: true },
         orderBy: { name: "asc" },
