@@ -114,10 +114,10 @@ export function Footer() {
         {/* Divider + thanh dưới cùng */}
         <div className="mt-14 border-t border-cream/15 pt-6">
           <div className="flex flex-col items-center justify-between gap-4 text-xs text-cream/60 sm:flex-row">
-            <p className="uppercase tracking-[0.25em]">
+            <p className="text-center uppercase tracking-widest sm:tracking-[0.25em]">
               © {year} {siteConfig.name}. All rights reserved.
             </p>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
               <span className="italic">Thiết kế bởi {siteConfig.name} Team</span>
               <span className="rounded border border-cream/20 px-2 py-1 text-[10px] font-semibold tracking-wider">
                 VNPAY

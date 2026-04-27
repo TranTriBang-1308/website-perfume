@@ -80,22 +80,22 @@ export function HeroSlider({ banners }: Props) {
               <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-ink/40 to-transparent" />
 
               {/* Nội dung: trượt-lên-fade khi active */}
-              <div className="relative z-10 mx-auto flex h-full max-w-7xl items-center px-4 sm:px-6 lg:px-8">
+              <div className="relative z-10 mx-auto flex h-full w-full max-w-7xl items-center px-4 sm:px-6 lg:px-8">
                 <div
-                  className={`max-w-xl space-y-6 text-cream transition-all duration-[900ms] ease-out ${
+                  className={`w-full max-w-xl space-y-6 text-cream transition-all duration-[900ms] ease-out ${
                     active ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
                   }`}
                 >
                   {b.subtitle && (
-                    <p className="text-xs uppercase tracking-[0.35em] text-champagne">
+                    <p className="wrap-break-word text-xs uppercase tracking-[0.35em] text-champagne">
                       {b.subtitle}
                     </p>
                   )}
-                  <h1 className="font-display text-5xl font-light leading-[1.05] sm:text-6xl lg:text-7xl">
+                  <h1 className="wrap-break-word font-display text-4xl font-light leading-[1.05] sm:text-6xl lg:text-7xl">
                     {b.title}
                   </h1>
                   {b.description && (
-                    <p className="max-w-md text-base text-cream/80">{b.description}</p>
+                    <p className="max-w-md wrap-break-word text-base text-cream/80">{b.description}</p>
                   )}
                   {b.ctaLabel && b.ctaHref && (
                     <div className="pt-2">

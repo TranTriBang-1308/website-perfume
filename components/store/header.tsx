@@ -25,16 +25,18 @@ function HeaderIconLink({
   label,
   icon,
   badge,
+  className = "",
 }: {
   href: string;
   label: string;
   icon: React.ReactNode;
   badge?: number;
+  className?: string;
 }) {
   return (
     <Link
       href={href}
-      className="group relative flex flex-col items-center gap-1 text-ink-muted transition-colors hover:text-ink"
+      className={`group relative flex flex-col items-center gap-1 text-ink-muted transition-colors hover:text-ink ${className}`}
     >
       <span className="relative">
         {icon}
@@ -74,9 +76,9 @@ export async function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-[color:var(--color-border-soft)] bg-cream/95 backdrop-blur">
       {/* Row 1 — brand / search / icon buttons */}
-      <div className="mx-auto flex max-w-7xl items-center gap-6 px-4 py-4 sm:px-6 lg:gap-10 lg:px-8">
+      <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-4 sm:gap-6 sm:px-6 lg:gap-10 lg:px-8">
         {/* Brand */}
-        <Link href="/" className="flex items-center gap-3 shrink-0">
+        <Link href="/" className="flex min-w-0 items-center gap-3 shrink">
           <div className="hidden flex-col sm:flex">
             <span className="text-[10px] uppercase tracking-[0.25em] text-ink-muted">
               Chào mừng đến với
@@ -88,9 +90,9 @@ export async function Header() {
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-2 sm:hidden">
+          <div className="flex min-w-0 items-center gap-2 sm:hidden">
             <LogoMark />
-            <span className="font-display text-lg leading-none">Whisper of Scent</span>
+            <span className="truncate font-display text-base leading-none">Whisper of Scent</span>
           </div>
         </Link>
 
@@ -100,10 +102,11 @@ export async function Header() {
         </div>
 
         {/* Icon buttons */}
-        <div className="flex items-center gap-5 md:gap-7">
+        <div className="ml-auto flex items-center gap-3 sm:gap-5 md:gap-7">
           <HeaderIconLink
             href="/products"
             label="Cửa hàng"
+            className="hidden sm:flex"
             icon={
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-6 w-6">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 21s-7-7-7-12a7 7 0 1114 0c0 5-7 12-7 12z" />
@@ -114,6 +117,7 @@ export async function Header() {
           <HeaderIconLink
             href="/search"
             label="Hỗ trợ"
+            className="hidden sm:flex"
             icon={
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-6 w-6">
                 <circle cx="12" cy="12" r="9" />
