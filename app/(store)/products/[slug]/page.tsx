@@ -3,10 +3,9 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getProductBySlug, getRelatedProducts } from "@/lib/queries/products";
-import { formatVND } from "@/lib/utils";
 import { ProductGallery } from "@/components/store/product-gallery";
-import { AddToCartButton } from "@/components/store/add-to-cart-button";
 import { ProductCard } from "@/components/store/product-card";
+import { VariantSelector, type VariantOption } from "@/components/store/variant-selector";
 import { WishlistButton } from "@/components/store/wishlist-button";
 import { ReviewForm } from "@/components/store/review-form";
 import { hasUserPurchased, getUserReview } from "@/lib/queries/reviews";
@@ -83,10 +82,17 @@ export default async function ProductDetailPage({ params }: PageProps) {
     existingReview = userReview ? { rating: userReview.rating, comment: userReview.comment } : null;
   }
 
-  const price = Number(product.price);
-  const compareAt = product.compareAtPrice ? Number(product.compareAtPrice) : null;
-  const hasDiscount = compareAt !== null && compareAt > price;
-  const outOfStock = product.stock <= 0;
+  // Chuyển variants từ Prisma (Decimal) sang plain object để truyền xuống Client Component
+  const variantOptions: VariantOption[] = product.variants.map((v) => ({
+    id: v.id,
+    volumeMl: v.volumeMl,
+    price: Number(v.price),
+    compareAtPrice: v.compareAtPrice !== null ? Number(v.compareAtPrice) : null,
+    stock: v.stock,
+  }));
+
+  const defaultVariant = product.variants.find((v) => v.isDefault) ?? product.variants[0];
+  const totalStock = product.variants.reduce((sum, v) => sum + v.stock, 0);
 
   const avgRating =
     product.reviews.length > 0
@@ -116,20 +122,9 @@ export default async function ProductDetailPage({ params }: PageProps) {
             </Link>
             <h1 className="mt-2 font-display text-4xl sm:text-5xl">{product.name}</h1>
             <p className="mt-3 text-sm text-ink-muted">
-              {concentrationLabel[product.concentration]} · {product.volumeMl}ml · {genderLabel[product.gender]}
+              {concentrationLabel[product.concentration]} · {genderLabel[product.gender]}
+              {defaultVariant && ` · từ ${defaultVariant.volumeMl}ml`}
             </p>
-          </div>
-
-          <div className="flex items-baseline gap-3 border-y border-[color:var(--color-border-soft)] py-4">
-            <span className="font-display text-3xl">{formatVND(price)}</span>
-            {hasDiscount && (
-              <>
-                <span className="text-lg text-ink-muted line-through">{formatVND(compareAt)}</span>
-                <span className="ml-auto bg-burgundy px-2 py-1 text-xs uppercase tracking-widest text-white">
-                  -{Math.round((1 - price / compareAt) * 100)}%
-                </span>
-              </>
-            )}
           </div>
 
           <p className="leading-relaxed text-ink-muted">{product.description}</p>
@@ -160,17 +155,17 @@ export default async function ProductDetailPage({ params }: PageProps) {
             </div>
           )}
 
-          <div className="flex gap-3">
+          <div className="flex items-start gap-3">
             <div className="flex-1">
-              <AddToCartButton productId={product.id} disabled={outOfStock} />
+              <VariantSelector variants={variantOptions} />
             </div>
             <WishlistButton productId={product.id} initialInWishlist={inWishlist} variant="icon" className="h-12 w-12" />
           </div>
 
           <dl className="grid grid-cols-2 gap-4 pt-4 text-sm">
             <div>
-              <dt className="text-ink-muted">Tình trạng</dt>
-              <dd>{outOfStock ? "Hết hàng" : `Còn ${product.stock} sản phẩm`}</dd>
+              <dt className="text-ink-muted">Tổng tồn kho</dt>
+              <dd>{totalStock > 0 ? `${totalStock} sản phẩm` : "Hết hàng"}</dd>
             </div>
             <div>
               <dt className="text-ink-muted">Danh mục</dt>

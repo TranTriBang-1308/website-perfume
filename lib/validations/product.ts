@@ -23,37 +23,79 @@ export const productQuerySchema = z.object({
 
 export type ProductQuery = z.infer<typeof productQuerySchema>;
 
-export const productCreateSchema = z.object({
-  name: z.string().min(1, "Tên sản phẩm là bắt buộc").max(200),
-  slug: z
-    .string()
-    .regex(/^[a-z0-9-]+$/, "Slug chỉ gồm chữ thường, số và dấu gạch ngang"),
-  description: z.string().min(10, "Mô tả tối thiểu 10 ký tự"),
-  price: z.number().positive("Giá phải lớn hơn 0"),
-  compareAtPrice: z.number().positive().optional(),
-  stock: z.number().int().nonnegative().default(0),
-  sku: z.string().optional(),
+// Schema cho 1 variant — dùng khi tạo/sửa sản phẩm cùng các dung tích
+export const productVariantInputSchema = z.object({
+  id: z.string().cuid().optional(), // có khi sửa, không có khi tạo mới
   volumeMl: z.number().int().positive("Dung tích phải > 0"),
-  gender: z.enum(GENDERS),
-  concentration: z.enum(CONCENTRATIONS),
+  price: z.number().positive("Giá phải lớn hơn 0"),
+  compareAtPrice: z.number().positive().nullable().optional(),
+  stock: z.number().int().nonnegative().default(0),
+  sku: z.string().optional().nullable(),
+  isDefault: z.boolean().default(false),
+  position: z.number().int().nonnegative().default(0),
+});
+
+export const productCreateSchema = z
+  .object({
+    name: z.string().min(1, "Tên sản phẩm là bắt buộc").max(200),
+    slug: z
+      .string()
+      .regex(/^[a-z0-9-]+$/, "Slug chỉ gồm chữ thường, số và dấu gạch ngang"),
+    description: z.string().min(10, "Mô tả tối thiểu 10 ký tự"),
+    gender: z.enum(GENDERS),
+    concentration: z.enum(CONCENTRATIONS),
+    topNotes: z.string().optional(),
+    middleNotes: z.string().optional(),
+    baseNotes: z.string().optional(),
+    isFeatured: z.boolean().default(false),
+    isActive: z.boolean().default(true),
+    brandId: z.string().cuid(),
+    categoryId: z.string().cuid(),
+    images: z
+      .array(
+        z.object({
+          url: z.string().url("URL ảnh không hợp lệ"),
+          alt: z.string().optional(),
+        })
+      )
+      .optional(),
+    variants: z
+      .array(productVariantInputSchema)
+      .min(1, "Sản phẩm phải có ít nhất 1 dung tích"),
+  })
+  .refine(
+    (data) => data.variants.filter((v) => v.isDefault).length === 1,
+    { message: "Phải có đúng 1 dung tích mặc định", path: ["variants"] }
+  )
+  .refine(
+    (data) => new Set(data.variants.map((v) => v.volumeMl)).size === data.variants.length,
+    { message: "Các dung tích không được trùng nhau", path: ["variants"] }
+  );
+
+// Update là partial của create — nhưng variants nếu được gửi thì vẫn phải đầy đủ
+export const productUpdateSchema = z.object({
+  name: z.string().min(1).max(200).optional(),
+  slug: z.string().regex(/^[a-z0-9-]+$/).optional(),
+  description: z.string().min(10).optional(),
+  gender: z.enum(GENDERS).optional(),
+  concentration: z.enum(CONCENTRATIONS).optional(),
   topNotes: z.string().optional(),
   middleNotes: z.string().optional(),
   baseNotes: z.string().optional(),
-  isFeatured: z.boolean().default(false),
-  isActive: z.boolean().default(true),
-  brandId: z.string().cuid(),
-  categoryId: z.string().cuid(),
+  isFeatured: z.boolean().optional(),
+  isActive: z.boolean().optional(),
+  brandId: z.string().cuid().optional(),
+  categoryId: z.string().cuid().optional(),
   images: z
     .array(
       z.object({
-        url: z.string().url("URL ảnh không hợp lệ"),
+        url: z.string().url(),
         alt: z.string().optional(),
       })
     )
     .optional(),
+  variants: z.array(productVariantInputSchema).min(1).optional(),
 });
-
-export const productUpdateSchema = productCreateSchema.partial();
 
 export const productImageSchema = z.object({
   url: z.string().url("URL ảnh không hợp lệ"),
@@ -63,4 +105,5 @@ export const productImageSchema = z.object({
 
 export type ProductCreateInput = z.infer<typeof productCreateSchema>;
 export type ProductUpdateInput = z.infer<typeof productUpdateSchema>;
+export type ProductVariantInput = z.infer<typeof productVariantInputSchema>;
 export type ProductImageInput = z.infer<typeof productImageSchema>;

@@ -5,18 +5,19 @@ async function getCartItemsRaw(userId: string) {
     where: { userId },
     orderBy: { createdAt: "desc" },
     include: {
-      product: {
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          price: true,
-          stock: true,
-          volumeMl: true,
-          concentration: true,
-          isActive: true,
-          images: { take: 1, orderBy: { position: "asc" }, select: { url: true, alt: true } },
-          brand: { select: { name: true } },
+      variant: {
+        include: {
+          product: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              concentration: true,
+              isActive: true,
+              images: { take: 1, orderBy: { position: "asc" }, select: { url: true, alt: true } },
+              brand: { select: { name: true } },
+            },
+          },
         },
       },
     },
@@ -29,9 +30,10 @@ function toPlainCartItem<T extends Awaited<ReturnType<typeof getCartItemsRaw>>[n
 ) {
   return {
     ...item,
-    product: {
-      ...item.product,
-      price: Number(item.product.price),
+    variant: {
+      ...item.variant,
+      price: Number(item.variant.price),
+      compareAtPrice: item.variant.compareAtPrice !== null ? Number(item.variant.compareAtPrice) : null,
     },
   };
 }
@@ -43,9 +45,10 @@ export async function getCartItems(userId: string) {
 
 export async function getCartSummary(userId: string) {
   const items = await getCartItems(userId);
-  const activeItems = items.filter((i) => i.product.isActive);
+  // Bỏ qua những dòng trỏ tới sản phẩm đã ngừng kinh doanh
+  const activeItems = items.filter((i) => i.variant.product.isActive);
   const subtotal = activeItems.reduce(
-    (sum, i) => sum + i.product.price * i.quantity,
+    (sum, i) => sum + i.variant.price * i.quantity,
     0
   );
   return { items: activeItems, subtotal, count: activeItems.length };

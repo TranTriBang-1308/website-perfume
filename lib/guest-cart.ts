@@ -3,7 +3,7 @@
 
 const STORAGE_KEY = "parfum:guest-cart";
 
-export type GuestCartItem = { productId: string; quantity: number };
+export type GuestCartItem = { variantId: string; quantity: number };
 
 function isBrowser() {
   return typeof window !== "undefined";
@@ -19,7 +19,7 @@ export function getGuestCart(): GuestCartItem[] {
     return parsed.filter(
       (x): x is GuestCartItem =>
         x &&
-        typeof x.productId === "string" &&
+        typeof x.variantId === "string" &&
         typeof x.quantity === "number" &&
         x.quantity > 0
     );
@@ -28,14 +28,14 @@ export function getGuestCart(): GuestCartItem[] {
   }
 }
 
-export function addGuestCartItem(productId: string, quantity = 1) {
+export function addGuestCartItem(variantId: string, quantity = 1) {
   if (!isBrowser()) return;
   const items = getGuestCart();
-  const idx = items.findIndex((i) => i.productId === productId);
+  const idx = items.findIndex((i) => i.variantId === variantId);
   if (idx >= 0) {
     items[idx].quantity = Math.min(99, items[idx].quantity + quantity);
   } else {
-    items.push({ productId, quantity });
+    items.push({ variantId, quantity });
   }
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
 }

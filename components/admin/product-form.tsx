@@ -13,7 +13,19 @@ import { CloudinaryUpload } from "@/components/admin/cloudinary-upload";
 
 type Props = {
   productId?: string;
-  initialValues?: Partial<ProductCreateInput> & { images?: Array<{ url: string; alt?: string }> };
+  initialValues?: Partial<ProductCreateInput> & {
+    images?: Array<{ url: string; alt?: string }>;
+    variants?: Array<{
+      id?: string;
+      volumeMl: number;
+      price: number;
+      compareAtPrice?: number | null;
+      stock: number;
+      sku?: string | null;
+      isDefault: boolean;
+      position: number;
+    }>;
+  };
   brands: Array<{ id: string; name: string }>;
   categories: Array<{ id: string; name: string }>;
 };
@@ -50,11 +62,6 @@ export function ProductForm({ productId, initialValues, brands, categories }: Pr
       name: initialValues?.name ?? "",
       slug: initialValues?.slug ?? "",
       description: initialValues?.description ?? "",
-      price: initialValues?.price,
-      compareAtPrice: initialValues?.compareAtPrice,
-      stock: initialValues?.stock ?? 0,
-      sku: initialValues?.sku ?? "",
-      volumeMl: initialValues?.volumeMl,
       gender: initialValues?.gender ?? "UNISEX",
       concentration: initialValues?.concentration ?? "EDP",
       topNotes: initialValues?.topNotes ?? "",
@@ -65,16 +72,29 @@ export function ProductForm({ productId, initialValues, brands, categories }: Pr
       brandId: initialValues?.brandId ?? "",
       categoryId: initialValues?.categoryId ?? "",
       images: initialValues?.images ?? [],
+      variants:
+        initialValues?.variants && initialValues.variants.length > 0
+          ? initialValues.variants
+          : [{ volumeMl: 100, price: 0, compareAtPrice: null, stock: 0, sku: "", isDefault: true, position: 0 }],
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields: imageFields, append: appendImage, remove: removeImage } = useFieldArray({
     control,
     name: "images",
   });
 
+  const { fields: variantFields, append: appendVariant, remove: removeVariant } = useFieldArray({
+    control,
+    name: "variants",
+  });
+
   const watchedImages = useWatch({ control, name: "images" }) as
     | Array<{ url?: string; alt?: string }>
+    | undefined;
+
+  const watchedVariants = useWatch({ control, name: "variants" }) as
+    | Array<{ isDefault?: boolean }>
     | undefined;
 
   const onNameBlur = () => {
@@ -83,6 +103,14 @@ export function ProductForm({ productId, initialValues, brands, categories }: Pr
     if (name && !slug) {
       setValue("slug", slugify(name), { shouldValidate: true });
     }
+  };
+
+  // Khi tick "Mặc định" cho 1 variant, tự động bỏ tick các variant khác
+  const setAsDefault = (index: number) => {
+    const variants = getValues("variants") as Array<{ isDefault: boolean }>;
+    variants.forEach((_, i) => {
+      setValue(`variants.${i}.isDefault`, i === index, { shouldValidate: true });
+    });
   };
 
   const onSubmit = async (data: any) => {
@@ -105,6 +133,8 @@ export function ProductForm({ productId, initialValues, brands, categories }: Pr
     router.refresh();
   };
 
+  const variantsError = (errors.variants as any)?.message ?? (errors.variants as any)?.root?.message;
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="max-w-4xl space-y-6">
       <fieldset className="space-y-4 border border-[color:var(--color-border-soft)] bg-white p-6">
@@ -125,34 +155,6 @@ export function ProductForm({ productId, initialValues, brands, categories }: Pr
             {...register("description")}
           />
         </FormField>
-
-        <div className="grid grid-cols-2 gap-4">
-          <FormField label="Giá (VND)" htmlFor="price" error={(errors.price as any)?.message}>
-            <Input id="price" type="number" step="1000" {...register("price", { valueAsNumber: true })} />
-          </FormField>
-          <FormField label="Giá gốc (VND)" htmlFor="compareAtPrice" error={(errors.compareAtPrice as any)?.message}>
-            <Input
-              id="compareAtPrice"
-              type="number"
-              step="1000"
-              {...register("compareAtPrice", {
-                setValueAs: (v) => (v === "" || v === null || v === undefined ? undefined : Number(v)),
-              })}
-            />
-          </FormField>
-        </div>
-
-        <div className="grid grid-cols-3 gap-4">
-          <FormField label="Tồn kho" htmlFor="stock" error={(errors.stock as any)?.message}>
-            <Input id="stock" type="number" {...register("stock", { valueAsNumber: true })} />
-          </FormField>
-          <FormField label="Dung tích (ml)" htmlFor="volumeMl" error={(errors.volumeMl as any)?.message}>
-            <Input id="volumeMl" type="number" {...register("volumeMl", { valueAsNumber: true })} />
-          </FormField>
-          <FormField label="SKU" htmlFor="sku" error={(errors.sku as any)?.message}>
-            <Input id="sku" {...register("sku")} />
-          </FormField>
-        </div>
       </fieldset>
 
       <fieldset className="space-y-4 border border-[color:var(--color-border-soft)] bg-white p-6">
@@ -211,6 +213,105 @@ export function ProductForm({ productId, initialValues, brands, categories }: Pr
       </fieldset>
 
       <fieldset className="space-y-4 border border-[color:var(--color-border-soft)] bg-white p-6">
+        <div className="flex items-center justify-between">
+          <legend className="text-sm font-medium">Dung tích &amp; giá</legend>
+          <p className="text-xs text-ink-muted">
+            Mỗi sản phẩm có thể có nhiều dung tích, mỗi dung tích có giá &amp; tồn kho riêng.
+          </p>
+        </div>
+
+        {variantsError && <p className="text-sm text-burgundy">{variantsError}</p>}
+
+        <div className="space-y-3">
+          {variantFields.map((field, i) => {
+            const isDefault = watchedVariants?.[i]?.isDefault ?? false;
+            return (
+              <div
+                key={field.id}
+                className="grid grid-cols-12 items-end gap-3 border border-[color:var(--color-border-soft)] bg-cream/40 p-3"
+              >
+                <div className="col-span-2">
+                  <label className="text-xs uppercase tracking-widest text-ink-muted">Dung tích (ml)</label>
+                  <Input
+                    type="number"
+                    {...register(`variants.${i}.volumeMl`, { valueAsNumber: true })}
+                  />
+                </div>
+                <div className="col-span-3">
+                  <label className="text-xs uppercase tracking-widest text-ink-muted">Giá (VND)</label>
+                  <Input
+                    type="number"
+                    step="1000"
+                    {...register(`variants.${i}.price`, { valueAsNumber: true })}
+                  />
+                </div>
+                <div className="col-span-3">
+                  <label className="text-xs uppercase tracking-widest text-ink-muted">Giá gốc (VND)</label>
+                  <Input
+                    type="number"
+                    step="1000"
+                    {...register(`variants.${i}.compareAtPrice`, {
+                      setValueAs: (v) => (v === "" || v === null || v === undefined ? null : Number(v)),
+                    })}
+                  />
+                </div>
+                <div className="col-span-1">
+                  <label className="text-xs uppercase tracking-widest text-ink-muted">Tồn</label>
+                  <Input
+                    type="number"
+                    {...register(`variants.${i}.stock`, { valueAsNumber: true })}
+                  />
+                </div>
+                <div className="col-span-2">
+                  <label className="text-xs uppercase tracking-widest text-ink-muted">SKU</label>
+                  <Input {...register(`variants.${i}.sku`)} />
+                </div>
+                <div className="col-span-1 flex flex-col items-center gap-2 pb-1">
+                  <label className="flex flex-col items-center gap-1 text-[10px] uppercase tracking-widest text-ink-muted">
+                    <input
+                      type="radio"
+                      name="defaultVariant"
+                      checked={isDefault}
+                      onChange={() => setAsDefault(i)}
+                    />
+                    Mặc định
+                  </label>
+                  {variantFields.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeVariant(i)}
+                      className="text-xs text-burgundy hover:underline"
+                    >
+                      Xóa
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() =>
+            appendVariant({
+              volumeMl: 50,
+              price: 0,
+              compareAtPrice: null,
+              stock: 0,
+              sku: "",
+              isDefault: false,
+              position: variantFields.length,
+            })
+          }
+        >
+          + Thêm dung tích
+        </Button>
+      </fieldset>
+
+      <fieldset className="space-y-4 border border-[color:var(--color-border-soft)] bg-white p-6">
         <legend className="text-sm font-medium">Hương thơm</legend>
         <FormField label="Hương đầu" htmlFor="topNotes">
           <Input id="topNotes" {...register("topNotes")} placeholder="Ví dụ: Bergamot, Lemon" />
@@ -225,7 +326,7 @@ export function ProductForm({ productId, initialValues, brands, categories }: Pr
 
       <fieldset className="space-y-4 border border-[color:var(--color-border-soft)] bg-white p-6">
         <legend className="text-sm font-medium">Ảnh sản phẩm</legend>
-        {fields.map((field, i) => {
+        {imageFields.map((field, i) => {
           const url = watchedImages?.[i]?.url;
           return (
             <div key={field.id} className="flex gap-3 items-end border-b border-[color:var(--color-border-soft)] pb-3">
@@ -247,7 +348,7 @@ export function ProductForm({ productId, initialValues, brands, categories }: Pr
                 <label className="text-xs uppercase tracking-widest text-ink-muted">Alt text</label>
                 <Input {...register(`images.${i}.alt`)} placeholder="Mô tả ảnh" />
               </div>
-              <Button type="button" variant="outline" size="sm" onClick={() => remove(i)}>
+              <Button type="button" variant="outline" size="sm" onClick={() => removeImage(i)}>
                 Xóa
               </Button>
             </div>
@@ -258,13 +359,11 @@ export function ProductForm({ productId, initialValues, brands, categories }: Pr
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => append({ url: "", alt: "" })}
+            onClick={() => appendImage({ url: "", alt: "" })}
           >
             + Thêm ảnh (dán URL)
           </Button>
-          <CloudinaryUpload
-            onUploaded={(url) => append({ url, alt: "" })}
-          />
+          <CloudinaryUpload onUploaded={(url) => appendImage({ url, alt: "" })} />
         </div>
       </fieldset>
 

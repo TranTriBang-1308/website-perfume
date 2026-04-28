@@ -6,6 +6,7 @@ import { generateOrderNumber } from "@/lib/utils";
 import { sendOrderConfirmation } from "@/lib/email";
 import { applyCoupon } from "@/lib/coupons";
 import { rateLimit, getIdentifier } from "@/lib/rate-limit";
+import { syncProductPriceCache } from "@/lib/queries/variants";
 
 export async function POST(req: Request) {
   const rl = rateLimit(getIdentifier(req, "orders"), { limit: 5, windowMs: 60_000 });
@@ -35,12 +36,20 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Địa chỉ không hợp lệ" }, { status: 400 });
   }
 
+  // Sản phẩm cần đồng bộ minPrice/hasDiscount sau khi giảm tồn kho không cần,
+  // nhưng nếu sau này tồn kho ảnh hưởng tới hiển thị, có thể bổ sung.
+  const productIdsToSync: string[] = [];
+
   try {
     const order = await prisma.$transaction(async (tx) => {
       const cartItems = await tx.cartItem.findMany({
         where: { userId },
         include: {
-          product: { select: { id: true, name: true, price: true, stock: true, isActive: true } },
+          variant: {
+            include: {
+              product: { select: { id: true, name: true, isActive: true } },
+            },
+          },
         },
       });
 
@@ -49,16 +58,16 @@ export async function POST(req: Request) {
       }
 
       for (const item of cartItems) {
-        if (!item.product.isActive) {
-          throw new Error(`INACTIVE:${item.product.name}`);
+        if (!item.variant.product.isActive) {
+          throw new Error(`INACTIVE:${item.variant.product.name}`);
         }
-        if (item.quantity > item.product.stock) {
-          throw new Error(`OUT_OF_STOCK:${item.product.name}`);
+        if (item.quantity > item.variant.stock) {
+          throw new Error(`OUT_OF_STOCK:${item.variant.product.name}`);
         }
       }
 
       const subtotal = cartItems.reduce(
-        (sum, item) => sum + Number(item.product.price) * item.quantity,
+        (sum, item) => sum + Number(item.variant.price) * item.quantity,
         0
       );
       const shippingFee = subtotal >= 2000000 ? 0 : 35000;
@@ -92,10 +101,14 @@ export async function POST(req: Request) {
           note,
           couponCode,
           items: {
+            // Snapshot tên + dung tích + giá tại thời điểm đặt — đơn hàng cũ
+            // không vỡ khi admin sửa variant về sau
             create: cartItems.map((item) => ({
-              productId: item.product.id,
-              productName: item.product.name,
-              price: item.product.price,
+              productId: item.variant.product.id,
+              variantId: item.variant.id,
+              productName: item.variant.product.name,
+              volumeMl: item.variant.volumeMl,
+              price: item.variant.price,
               quantity: item.quantity,
             })),
           },
@@ -109,11 +122,13 @@ export async function POST(req: Request) {
         },
       });
 
+      // Trừ tồn kho ở mức variant
       for (const item of cartItems) {
-        await tx.product.update({
-          where: { id: item.product.id },
+        await tx.productVariant.update({
+          where: { id: item.variant.id },
           data: { stock: { decrement: item.quantity } },
         });
+        productIdsToSync.push(item.variant.product.id);
       }
 
       // Tăng usedCount của coupon nếu đã áp
@@ -129,6 +144,13 @@ export async function POST(req: Request) {
       return created;
     });
 
+    // Đồng bộ price cache (ngoài transaction để không kéo dài lock).
+    // Tồn kho thay đổi có thể chưa ảnh hưởng minPrice ngay, nhưng để chắc chắn
+    // hasDiscount/minPrice luôn nhất quán, ta sync lại.
+    await Promise.all(
+      [...new Set(productIdsToSync)].map((id) => syncProductPriceCache(id))
+    );
+
     // Gửi email xác nhận — không chặn response nếu lỗi/thiếu config
     if (session.user.email) {
       const full = await prisma.order.findUnique({
@@ -141,7 +163,7 @@ export async function POST(req: Request) {
           customerName: session.user.name ?? null,
           orderNumber: full.orderNumber,
           items: full.items.map((it) => ({
-            productName: it.productName,
+            productName: `${it.productName} — ${it.volumeMl}ml`,
             quantity: it.quantity,
             price: Number(it.price),
           })),

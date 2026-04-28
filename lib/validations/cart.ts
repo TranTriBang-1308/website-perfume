@@ -1,24 +1,24 @@
 import { z } from "zod";
 
 export const cartAddSchema = z.object({
-  productId: z.string().cuid("Sản phẩm không hợp lệ"),
+  variantId: z.string().cuid("Biến thể không hợp lệ"),
   quantity: z.number().int().positive().max(99).default(1),
 });
 
 export const cartUpdateSchema = z.object({
-  productId: z.string().cuid(),
+  variantId: z.string().cuid(),
   quantity: z.number().int().positive().max(99),
 });
 
 export const cartRemoveSchema = z.object({
-  productId: z.string().cuid(),
+  variantId: z.string().cuid(),
 });
 
 export const cartSyncSchema = z.object({
   items: z
     .array(
       z.object({
-        productId: z.string().cuid(),
+        variantId: z.string().cuid(),
         quantity: z.number().int().positive().max(99),
       })
     )

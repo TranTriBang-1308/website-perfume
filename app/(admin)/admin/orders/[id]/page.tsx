@@ -63,7 +63,10 @@ export default async function OrderDetailPage({ params }: PageProps) {
               <tbody className="divide-y divide-[color:var(--color-border-soft)]">
                 {order.items.map((item) => (
                   <tr key={item.id}>
-                    <td className="py-2">{item.productName}</td>
+                    <td className="py-2">
+                      {item.productName}
+                      <span className="ml-2 text-xs text-ink-muted">{item.volumeMl}ml</span>
+                    </td>
                     <td className="py-2 text-center">{item.quantity}</td>
                     <td className="py-2 text-right">{formatVND(Number(item.price))}</td>
                     <td className="py-2 text-right font-medium">{formatVND(Number(item.price) * item.quantity)}</td>

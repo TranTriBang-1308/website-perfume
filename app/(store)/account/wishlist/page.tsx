@@ -21,12 +21,13 @@ export default async function WishlistPage() {
           id: true,
           name: true,
           slug: true,
-          price: true,
-          compareAtPrice: true,
-          stock: true,
+          minPrice: true,
           isActive: true,
           images: { take: 1, orderBy: { position: "asc" }, select: { url: true, alt: true } },
           brand: { select: { name: true } },
+          variants: {
+            select: { stock: true },
+          },
         },
       },
     },
@@ -56,9 +57,11 @@ export default async function WishlistPage() {
       <ul className="mt-6 divide-y divide-[color:var(--color-border-soft)]">
         {activeItems.map((item) => {
           const product = item.product;
-          const price = Number(product.price);
+          const price = Number(product.minPrice);
           const image = product.images[0];
-          const outOfStock = product.stock <= 0;
+          // Hết hàng khi tổng tồn kho mọi variant = 0
+          const totalStock = product.variants.reduce((sum, v) => sum + v.stock, 0);
+          const outOfStock = totalStock <= 0;
 
           return (
             <li key={item.id} className="flex gap-4 py-4">

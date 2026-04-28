@@ -33,32 +33,32 @@ export async function POST(req: Request) {
     );
   }
 
-  const { productId, quantity } = parsed.data;
+  const { variantId, quantity } = parsed.data;
 
-  const product = await prisma.product.findUnique({
-    where: { id: productId },
-    select: { id: true, stock: true, isActive: true },
+  const variant = await prisma.productVariant.findUnique({
+    where: { id: variantId },
+    select: { id: true, stock: true, product: { select: { isActive: true } } },
   });
-  if (!product || !product.isActive) {
-    return NextResponse.json({ error: "Sản phẩm không tồn tại" }, { status: 404 });
+  if (!variant || !variant.product.isActive) {
+    return NextResponse.json({ error: "Biến thể không tồn tại" }, { status: 404 });
   }
 
   const existing = await prisma.cartItem.findUnique({
-    where: { userId_productId: { userId, productId } },
+    where: { userId_variantId: { userId, variantId } },
   });
   const nextQty = (existing?.quantity ?? 0) + quantity;
 
-  if (nextQty > product.stock) {
+  if (nextQty > variant.stock) {
     return NextResponse.json(
-      { error: `Chỉ còn ${product.stock} sản phẩm trong kho` },
+      { error: `Chỉ còn ${variant.stock} sản phẩm trong kho` },
       { status: 400 }
     );
   }
 
   const item = await prisma.cartItem.upsert({
-    where: { userId_productId: { userId, productId } },
+    where: { userId_variantId: { userId, variantId } },
     update: { quantity: nextQty },
-    create: { userId, productId, quantity },
+    create: { userId, variantId, quantity },
   });
 
   return NextResponse.json({ data: item, message: "Đã thêm vào giỏ" }, { status: 201 });
@@ -77,24 +77,24 @@ export async function PATCH(req: Request) {
     );
   }
 
-  const { productId, quantity } = parsed.data;
+  const { variantId, quantity } = parsed.data;
 
-  const product = await prisma.product.findUnique({
-    where: { id: productId },
+  const variant = await prisma.productVariant.findUnique({
+    where: { id: variantId },
     select: { stock: true },
   });
-  if (!product) {
-    return NextResponse.json({ error: "Sản phẩm không tồn tại" }, { status: 404 });
+  if (!variant) {
+    return NextResponse.json({ error: "Biến thể không tồn tại" }, { status: 404 });
   }
-  if (quantity > product.stock) {
+  if (quantity > variant.stock) {
     return NextResponse.json(
-      { error: `Chỉ còn ${product.stock} sản phẩm trong kho` },
+      { error: `Chỉ còn ${variant.stock} sản phẩm trong kho` },
       { status: 400 }
     );
   }
 
   const item = await prisma.cartItem.update({
-    where: { userId_productId: { userId, productId } },
+    where: { userId_variantId: { userId, variantId } },
     data: { quantity },
   });
   return NextResponse.json({ data: item });
@@ -111,7 +111,7 @@ export async function DELETE(req: Request) {
   }
 
   await prisma.cartItem.delete({
-    where: { userId_productId: { userId, productId: parsed.data.productId } },
+    where: { userId_variantId: { userId, variantId: parsed.data.variantId } },
   });
   return NextResponse.json({ message: "Đã xóa" });
 }

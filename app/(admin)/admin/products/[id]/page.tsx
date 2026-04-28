@@ -12,7 +12,10 @@ export default async function EditProductPage({ params }: PageProps) {
   const [product, brands, categories] = await Promise.all([
     prisma.product.findUnique({
       where: { id },
-      include: { images: { orderBy: { position: "asc" } } },
+      include: {
+        images: { orderBy: { position: "asc" } },
+        variants: { orderBy: [{ position: "asc" }, { volumeMl: "asc" }] },
+      },
     }),
     prisma.brand.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } }),
     prisma.category.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } }),
@@ -29,11 +32,6 @@ export default async function EditProductPage({ params }: PageProps) {
           name: product.name,
           slug: product.slug,
           description: product.description,
-          price: Number(product.price),
-          compareAtPrice: product.compareAtPrice ? Number(product.compareAtPrice) : undefined,
-          stock: product.stock,
-          sku: product.sku ?? "",
-          volumeMl: product.volumeMl,
           gender: product.gender,
           concentration: product.concentration,
           topNotes: product.topNotes ?? "",
@@ -44,6 +42,16 @@ export default async function EditProductPage({ params }: PageProps) {
           brandId: product.brandId,
           categoryId: product.categoryId,
           images: product.images.map((img) => ({ url: img.url, alt: img.alt ?? "" })),
+          variants: product.variants.map((v) => ({
+            id: v.id,
+            volumeMl: v.volumeMl,
+            price: Number(v.price),
+            compareAtPrice: v.compareAtPrice !== null ? Number(v.compareAtPrice) : null,
+            stock: v.stock,
+            sku: v.sku ?? "",
+            isDefault: v.isDefault,
+            position: v.position,
+          })),
         }}
         brands={brands}
         categories={categories}

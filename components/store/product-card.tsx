@@ -14,10 +14,14 @@ const concentrationLabel: Record<string, string> = {
 
 export function ProductCard({ product }: Props) {
   const image = product.images[0];
-  const price = Number(product.price);
-  const compareAt = product.compareAtPrice ? Number(product.compareAtPrice) : null;
+  const defaultVariant = product.variants[0];
+  // Hiển thị giá variant mặc định + so sánh giá (nếu variant mặc định có compareAtPrice).
+  // minPrice (Product) dùng cho filter/sort, còn card luôn thể hiện variant chính.
+  const price = defaultVariant ? Number(defaultVariant.price) : Number(product.minPrice);
+  const compareAt = defaultVariant?.compareAtPrice ? Number(defaultVariant.compareAtPrice) : null;
   const hasDiscount = compareAt !== null && compareAt > price;
-  const outOfStock = product.stock <= 0;
+  const stock = defaultVariant?.stock ?? 0;
+  const outOfStock = stock <= 0;
 
   return (
     <Link href={`/products/${product.slug}`} className="group block">
@@ -52,7 +56,8 @@ export function ProductCard({ product }: Props) {
         <p className="text-xs uppercase tracking-widest text-ink-muted">{product.brand.name}</p>
         <h3 className="font-display text-lg leading-tight">{product.name}</h3>
         <p className="text-xs text-ink-muted">
-          {concentrationLabel[product.concentration]} · {product.volumeMl}ml
+          {concentrationLabel[product.concentration]}
+          {defaultVariant && ` · ${defaultVariant.volumeMl}ml`}
         </p>
         <div className="flex items-baseline gap-2 pt-1">
           <span className="text-sm font-medium">{formatVND(price)}</span>

@@ -5,11 +5,11 @@ import { Button } from "@/components/ui/button";
 import { addGuestCartItem } from "@/lib/guest-cart";
 
 type Props = {
-  productId: string;
+  variantId: string;
   disabled?: boolean;
 };
 
-export function AddToCartButton({ productId, disabled }: Props) {
+export function AddToCartButton({ variantId, disabled }: Props) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -19,13 +19,13 @@ export function AddToCartButton({ productId, disabled }: Props) {
     const res = await fetch("/api/cart", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ productId, quantity: 1 }),
+      body: JSON.stringify({ variantId, quantity: 1 }),
     });
     setLoading(false);
 
     if (res.status === 401) {
       // Chưa đăng nhập → lưu vào localStorage, sync khi login
-      addGuestCartItem(productId, 1);
+      addGuestCartItem(variantId, 1);
       setMessage("Đã lưu vào giỏ. Đăng nhập để hoàn tất mua hàng.");
       return;
     }

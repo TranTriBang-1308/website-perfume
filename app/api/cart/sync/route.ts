@@ -24,32 +24,32 @@ export async function POST(req: Request) {
     return NextResponse.json({ data: { merged: 0 } });
   }
 
-  const productIds = [...new Set(items.map((i) => i.productId))];
-  const products = await prisma.product.findMany({
-    where: { id: { in: productIds }, isActive: true },
+  const variantIds = [...new Set(items.map((i) => i.variantId))];
+  const variants = await prisma.productVariant.findMany({
+    where: { id: { in: variantIds }, product: { isActive: true } },
     select: { id: true, stock: true },
   });
-  const stockMap = new Map(products.map((p) => [p.id, p.stock]));
+  const stockMap = new Map(variants.map((v) => [v.id, v.stock]));
 
   // Merge: cộng quantity khách với quantity đã có trong DB, cap ở stock
   const existing = await prisma.cartItem.findMany({
-    where: { userId, productId: { in: productIds } },
+    where: { userId, variantId: { in: variantIds } },
   });
-  const existingMap = new Map(existing.map((c) => [c.productId, c.quantity]));
+  const existingMap = new Map(existing.map((c) => [c.variantId, c.quantity]));
 
   let merged = 0;
   await prisma.$transaction(async (tx) => {
     for (const item of items) {
-      const stock = stockMap.get(item.productId);
+      const stock = stockMap.get(item.variantId);
       if (stock === undefined || stock <= 0) continue;
-      const current = existingMap.get(item.productId) ?? 0;
+      const current = existingMap.get(item.variantId) ?? 0;
       const target = Math.min(stock, 99, current + item.quantity);
       if (target === current) continue;
 
       await tx.cartItem.upsert({
-        where: { userId_productId: { userId, productId: item.productId } },
+        where: { userId_variantId: { userId, variantId: item.variantId } },
         update: { quantity: target },
-        create: { userId, productId: item.productId, quantity: target },
+        create: { userId, variantId: item.variantId, quantity: target },
       });
       merged++;
     }

@@ -13,8 +13,10 @@ export function CartLine({ item }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const price = item.product.price;
-  const image = item.product.images[0];
+  const variant = item.variant;
+  const product = variant.product;
+  const price = variant.price;
+  const image = product.images[0];
 
   const updateQty = async (quantity: number) => {
     setError(null);
@@ -22,7 +24,7 @@ export function CartLine({ item }: Props) {
     const res = await fetch("/api/cart", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ productId: item.productId, quantity }),
+      body: JSON.stringify({ variantId: variant.id, quantity }),
     });
     const json = await res.json().catch(() => ({}));
     if (!res.ok) {
@@ -37,7 +39,7 @@ export function CartLine({ item }: Props) {
     const res = await fetch("/api/cart", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ productId: item.productId }),
+      body: JSON.stringify({ variantId: variant.id }),
     });
     if (!res.ok) {
       setError("Không thể xóa sản phẩm");
@@ -48,12 +50,12 @@ export function CartLine({ item }: Props) {
 
   return (
     <div className="flex gap-4 border-b border-[color:var(--color-border-soft)] py-6">
-      <Link href={`/products/${item.product.slug}`} className="relative h-28 w-24 flex-shrink-0 overflow-hidden bg-white">
+      <Link href={`/products/${product.slug}`} className="relative h-28 w-24 flex-shrink-0 overflow-hidden bg-white">
         {image ? (
-          <Image src={image.url} alt={image.alt ?? item.product.name} fill sizes="96px" className="object-cover" />
+          <Image src={image.url} alt={image.alt ?? product.name} fill sizes="96px" className="object-cover" />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-champagne/20 to-burgundy/5 text-xs text-ink-muted">
-            {item.product.brand.name}
+            {product.brand.name}
           </div>
         )}
       </Link>
@@ -61,12 +63,12 @@ export function CartLine({ item }: Props) {
       <div className="flex-1 space-y-2">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-widest text-ink-muted">{item.product.brand.name}</p>
-            <Link href={`/products/${item.product.slug}`} className="font-display text-lg hover:underline">
-              {item.product.name}
+            <p className="text-xs uppercase tracking-widest text-ink-muted">{product.brand.name}</p>
+            <Link href={`/products/${product.slug}`} className="font-display text-lg hover:underline">
+              {product.name}
             </Link>
             <p className="text-xs text-ink-muted">
-              {item.product.concentration} · {item.product.volumeMl}ml
+              {product.concentration} · {variant.volumeMl}ml
             </p>
           </div>
           <p className="font-medium whitespace-nowrap">{formatVND(price * item.quantity)}</p>

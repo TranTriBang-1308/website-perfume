@@ -30,23 +30,29 @@ export async function GET(req: Request) {
       id: true,
       name: true,
       slug: true,
-      price: true,
-      compareAtPrice: true,
+      minPrice: true,
+      hasDiscount: true,
       images: {
         take: 1,
         orderBy: { position: "asc" },
         select: { url: true, alt: true },
       },
       brand: { select: { name: true } },
+      variants: {
+        where: { isDefault: true },
+        take: 1,
+        select: { compareAtPrice: true },
+      },
     },
   });
 
+  // Hiển thị "from {minPrice}" + giá so sánh từ variant mặc định nếu có
   const data = products.map((p) => ({
     id: p.id,
     name: p.name,
     slug: p.slug,
-    price: Number(p.price),
-    compareAtPrice: p.compareAtPrice ? Number(p.compareAtPrice) : null,
+    price: Number(p.minPrice),
+    compareAtPrice: p.variants[0]?.compareAtPrice ? Number(p.variants[0].compareAtPrice) : null,
     image: p.images[0] ?? null,
     brandName: p.brand.name,
   }));

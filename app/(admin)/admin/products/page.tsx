@@ -14,7 +14,13 @@ export default async function AdminProductsPage({ searchParams }: PageProps) {
   const page = Math.max(1, Number(raw.page) || 1);
   const limit = 20;
 
-  const where: any = { OR: [{ name: { contains: q, mode: "insensitive" } }, { sku: { contains: q, mode: "insensitive" } }] };
+  // SKU giờ thuộc variant — search theo tên hoặc theo SKU của bất kỳ variant nào
+  const where: any = {
+    OR: [
+      { name: { contains: q, mode: "insensitive" } },
+      { variants: { some: { sku: { contains: q, mode: "insensitive" } } } },
+    ],
+  };
 
   const [total, products] = await Promise.all([
     prisma.product.count({ where: q ? where : {} }),
@@ -27,12 +33,14 @@ export default async function AdminProductsPage({ searchParams }: PageProps) {
         id: true,
         name: true,
         slug: true,
-        sku: true,
-        price: true,
-        stock: true,
+        minPrice: true,
         isActive: true,
         brand: { select: { name: true } },
         images: { take: 1, select: { url: true } },
+        variants: {
+          select: { volumeMl: true, stock: true, isDefault: true, sku: true },
+          orderBy: [{ position: "asc" }, { volumeMl: "asc" }],
+        },
       },
     }),
   ]);
@@ -71,40 +79,44 @@ export default async function AdminProductsPage({ searchParams }: PageProps) {
             <thead>
               <tr className="text-left text-xs uppercase tracking-widest text-ink-muted">
                 <th className="px-6 py-3">Sản phẩm</th>
-                <th className="px-6 py-3">SKU</th>
                 <th className="px-6 py-3">Thương hiệu</th>
-                <th className="px-6 py-3 text-right">Giá</th>
-                <th className="px-6 py-3 text-center">Tồn</th>
+                <th className="px-6 py-3">Dung tích</th>
+                <th className="px-6 py-3 text-right">Giá từ</th>
+                <th className="px-6 py-3 text-center">Tổng tồn</th>
                 <th className="px-6 py-3 text-center">Trạng thái</th>
                 <th className="px-6 py-3 text-right">Hành động</th>
               </tr>
             </thead>
             <tbody>
-              {products.map((p) => (
-                <tr key={p.id} className="border-t border-[color:var(--color-border-soft)]">
-                  <td className="px-6 py-3 font-medium">{p.name}</td>
-                  <td className="px-6 py-3 font-mono text-xs text-ink-muted">{p.sku}</td>
-                  <td className="px-6 py-3 text-sm text-ink-muted">{p.brand.name}</td>
-                  <td className="px-6 py-3 text-right">{formatVND(Number(p.price))}</td>
-                  <td className="px-6 py-3 text-center text-ink-muted">{p.stock}</td>
-                  <td className="px-6 py-3 text-center">
-                    <span className={`text-xs font-medium ${p.isActive ? "text-ink" : "text-ink-muted"}`}>
-                      {p.isActive ? "Bán" : "Ẩn"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-3">
-                    <div className="flex items-center justify-end gap-3">
-                      <Link
-                        href={`/admin/products/${p.id}`}
-                        className="text-xs uppercase tracking-widest text-ink-muted hover:text-ink"
-                      >
-                        Sửa
-                      </Link>
-                      <DeleteButton endpoint={`/api/admin/products/${p.id}`} />
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {products.map((p) => {
+                const totalStock = p.variants.reduce((sum, v) => sum + v.stock, 0);
+                const volumes = p.variants.map((v) => `${v.volumeMl}ml`).join(", ");
+                return (
+                  <tr key={p.id} className="border-t border-[color:var(--color-border-soft)]">
+                    <td className="px-6 py-3 font-medium">{p.name}</td>
+                    <td className="px-6 py-3 text-sm text-ink-muted">{p.brand.name}</td>
+                    <td className="px-6 py-3 text-xs text-ink-muted">{volumes || "—"}</td>
+                    <td className="px-6 py-3 text-right">{formatVND(Number(p.minPrice))}</td>
+                    <td className="px-6 py-3 text-center text-ink-muted">{totalStock}</td>
+                    <td className="px-6 py-3 text-center">
+                      <span className={`text-xs font-medium ${p.isActive ? "text-ink" : "text-ink-muted"}`}>
+                        {p.isActive ? "Bán" : "Ẩn"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-3">
+                      <div className="flex items-center justify-end gap-3">
+                        <Link
+                          href={`/admin/products/${p.id}`}
+                          className="text-xs uppercase tracking-widest text-ink-muted hover:text-ink"
+                        >
+                          Sửa
+                        </Link>
+                        <DeleteButton endpoint={`/api/admin/products/${p.id}`} />
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}

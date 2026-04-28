@@ -210,9 +210,17 @@ async function main() {
     },
   ];
 
+  // Hệ số nhân giá theo dung tích so với volume gốc — quy ước decant:
+  // dung tích nhỏ có giá/ml cao hơn nên không phải tỉ lệ tuyến tính.
+  const variantRatios: Array<{ volumeMl: number; priceFactor: number; stockFactor: number }> = [
+    { volumeMl: 10, priceFactor: 0.2, stockFactor: 1.5 }, // decant nhỏ
+    { volumeMl: 50, priceFactor: 0.6, stockFactor: 0.7 }, // dung tích vừa
+  ];
+
   for (const p of productsData) {
-    const { brandSlug, categorySlug, ...rest } = p;
-    await prisma.product.upsert({
+    const { brandSlug, categorySlug, price, compareAtPrice, stock, volumeMl, ...rest } = p;
+
+    const product = await prisma.product.upsert({
       where: { slug: p.slug },
       update: {},
       create: {
@@ -221,9 +229,41 @@ async function main() {
         categoryId: catBySlug[categorySlug].id,
       },
     });
+
+    // Tạo variant mặc định = dung tích gốc, plus các variant nhỏ hơn (10ml, 50ml)
+    // Bỏ qua nếu trùng với volume gốc (vd sản phẩm 50ml thì không thêm 50ml nữa).
+    const allVariants = [
+      { volumeMl, price, compareAtPrice: compareAtPrice ?? null, stock, isDefault: true, position: 0 },
+      ...variantRatios
+        .filter((v) => v.volumeMl < volumeMl)
+        .map((v, i) => ({
+          volumeMl: v.volumeMl,
+          price: Math.round(price * v.priceFactor),
+          compareAtPrice: compareAtPrice ? Math.round(compareAtPrice * v.priceFactor) : null,
+          stock: Math.max(0, Math.floor(stock * v.stockFactor)),
+          isDefault: false,
+          position: i + 1,
+        })),
+    ];
+
+    for (const v of allVariants) {
+      await prisma.productVariant.upsert({
+        where: { productId_volumeMl: { productId: product.id, volumeMl: v.volumeMl } },
+        update: {},
+        create: { productId: product.id, ...v },
+      });
+    }
+
+    // Đồng bộ cache giá: minPrice = giá variant rẻ nhất, hasDiscount = có ít nhất 1 variant giảm giá
+    const minPrice = Math.min(...allVariants.map((v) => v.price));
+    const hasDiscount = allVariants.some((v) => v.compareAtPrice !== null);
+    await prisma.product.update({
+      where: { id: product.id },
+      data: { minPrice, hasDiscount },
+    });
   }
 
-  console.log(`✓ ${productsData.length} sản phẩm, ${brandData.length} thương hiệu, ${categoryData.length} danh mục`);
+  console.log(`✓ ${productsData.length} sản phẩm (kèm variants), ${brandData.length} thương hiệu, ${categoryData.length} danh mục`);
   console.log("✅ Seed completed");
 }
 

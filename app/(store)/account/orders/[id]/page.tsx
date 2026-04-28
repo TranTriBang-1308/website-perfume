@@ -60,7 +60,9 @@ export default async function OrderDetailPage({ params }: PageProps) {
             <li key={item.id} className="flex justify-between border-b border-[color:var(--color-border-soft)] pb-3 text-sm">
               <div>
                 <p className="font-medium">{item.productName}</p>
-                <p className="text-ink-muted">Số lượng: {item.quantity}</p>
+                <p className="text-ink-muted">
+                  {item.volumeMl}ml · Số lượng: {item.quantity}
+                </p>
               </div>
               <p>{formatVND(Number(item.price) * item.quantity)}</p>
             </li>

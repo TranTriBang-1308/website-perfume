@@ -3,7 +3,8 @@ import { revalidateTag } from "next/cache";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/api-auth";
-import { productCreateSchema, type ProductCreateInput } from "@/lib/validations/product";
+import { productCreateSchema } from "@/lib/validations/product";
+import { syncProductPriceCache } from "@/lib/queries/variants";
 
 export async function POST(req: Request) {
   const auth = await requireAdmin();
@@ -18,8 +19,8 @@ export async function POST(req: Request) {
     );
   }
 
-  const data = parsed.data as ProductCreateInput & { images?: Array<{url: string; alt?: string}> };
-  const images = (data.images as any) || [];
+  const data = parsed.data;
+  const images = data.images ?? [];
 
   try {
     const product = await prisma.product.create({
@@ -27,11 +28,6 @@ export async function POST(req: Request) {
         name: data.name,
         slug: data.slug,
         description: data.description,
-        price: data.price,
-        compareAtPrice: data.compareAtPrice,
-        stock: data.stock,
-        sku: data.sku,
-        volumeMl: data.volumeMl,
         gender: data.gender,
         concentration: data.concentration,
         topNotes: data.topNotes,
@@ -42,16 +38,30 @@ export async function POST(req: Request) {
         brandId: data.brandId,
         categoryId: data.categoryId,
         images: {
-          create: images.map((img: any, i: number) => ({
+          create: images.map((img, i) => ({
             url: img.url,
             alt: img.alt,
             position: i,
           })),
         },
+        variants: {
+          create: data.variants.map((v, i) => ({
+            volumeMl: v.volumeMl,
+            price: v.price,
+            compareAtPrice: v.compareAtPrice ?? null,
+            stock: v.stock,
+            sku: v.sku ?? null,
+            isDefault: v.isDefault,
+            position: v.position ?? i,
+          })),
+        },
       },
-      include: { images: true },
+      include: { images: true, variants: true },
     });
-    revalidateTag("products", "max");
+
+    await syncProductPriceCache(product.id);
+    revalidateTag("products");
+
     return NextResponse.json(
       { data: product, message: "Đã tạo sản phẩm" },
       { status: 201 }

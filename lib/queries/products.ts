@@ -3,12 +3,44 @@ import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import type { ProductQuery } from "@/lib/validations/product";
 
+// Sort dựa trên cột denormalized `minPrice` trên Product cho hiệu năng tốt
+// (không thể orderBy qua aggregate của variants trong Prisma).
 const sortMap: Record<ProductQuery["sort"], Prisma.ProductOrderByWithRelationInput> = {
   newest: { createdAt: "desc" },
-  "price-asc": { price: "asc" },
-  "price-desc": { price: "desc" },
+  "price-asc": { minPrice: "asc" },
+  "price-desc": { minPrice: "desc" },
   featured: { isFeatured: "desc" },
 };
+
+// Select dùng chung cho danh sách (card sản phẩm). Chỉ lấy đủ thông tin
+// để hiển thị card + badge sale + "from {minPrice}".
+const productCardSelect = {
+  id: true,
+  name: true,
+  slug: true,
+  minPrice: true,
+  hasDiscount: true,
+  concentration: true,
+  gender: true,
+  images: {
+    take: 1,
+    orderBy: { position: "asc" },
+    select: { url: true, alt: true },
+  },
+  brand: { select: { name: true, slug: true } },
+  // Lấy variant mặc định để biết volumeMl + compareAtPrice hiển thị trên card
+  variants: {
+    where: { isDefault: true },
+    take: 1,
+    select: {
+      id: true,
+      volumeMl: true,
+      price: true,
+      compareAtPrice: true,
+      stock: true,
+    },
+  },
+} satisfies Prisma.ProductSelect;
 
 export async function listProducts(query: ProductQuery) {
   const where: Prisma.ProductWhereInput = {
@@ -23,14 +55,14 @@ export async function listProducts(query: ProductQuery) {
     ...(query.category && { category: { slug: query.category } }),
     ...(query.gender && { gender: query.gender }),
     ...(query.concentration && { concentration: query.concentration }),
+    // Lọc theo dải giá: dùng minPrice để khớp với "starting from price" hiển thị trên card
     ...((query.minPrice !== undefined || query.maxPrice !== undefined) && {
-      price: {
+      minPrice: {
         ...(query.minPrice !== undefined && { gte: query.minPrice }),
         ...(query.maxPrice !== undefined && { lte: query.maxPrice }),
       },
     }),
-    // Chỉ lấy sản phẩm đang giảm giá (có giá gốc để so sánh)
-    ...(query.onSale && { compareAtPrice: { not: null } }),
+    ...(query.onSale && { hasDiscount: true }),
   };
 
   const [total, products] = await prisma.$transaction([
@@ -40,23 +72,7 @@ export async function listProducts(query: ProductQuery) {
       orderBy: sortMap[query.sort],
       skip: (query.page - 1) * query.limit,
       take: query.limit,
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        price: true,
-        compareAtPrice: true,
-        volumeMl: true,
-        concentration: true,
-        gender: true,
-        stock: true,
-        images: {
-          take: 1,
-          orderBy: { position: "asc" },
-          select: { url: true, alt: true },
-        },
-        brand: { select: { name: true, slug: true } },
-      },
+      select: productCardSelect,
     }),
   ]);
 
@@ -81,6 +97,10 @@ export const getProductBySlug = unstable_cache(
         brand: true,
         category: true,
         images: { orderBy: { position: "asc" } },
+        // Tất cả variant — sắp xếp theo position (admin có thể tùy biến thứ tự)
+        variants: {
+          orderBy: [{ position: "asc" }, { volumeMl: "asc" }],
+        },
         reviews: {
           orderBy: { createdAt: "desc" },
           take: 10,
@@ -98,19 +118,7 @@ export const getFeaturedProducts = unstable_cache(
       where: { isActive: true, isFeatured: true },
       take: limit,
       orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        price: true,
-        compareAtPrice: true,
-        volumeMl: true,
-        concentration: true,
-        gender: true,
-        stock: true,
-        images: { take: 1, orderBy: { position: "asc" }, select: { url: true, alt: true } },
-        brand: { select: { name: true, slug: true } },
-      },
+      select: productCardSelect,
     }),
   ["featured-products"],
   { tags: ["products"], revalidate: 3600 }
@@ -129,19 +137,7 @@ export async function getRelatedProducts(params: {
     where: { isActive: true, brandId, id: { not: productId } },
     take: limit,
     orderBy: { createdAt: "desc" },
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      price: true,
-      compareAtPrice: true,
-      volumeMl: true,
-      concentration: true,
-      gender: true,
-      stock: true,
-      images: { take: 1, orderBy: { position: "asc" }, select: { url: true, alt: true } },
-      brand: { select: { name: true, slug: true } },
-    },
+    select: productCardSelect,
   });
 
   if (sameBrand.length >= limit) return sameBrand;
@@ -154,19 +150,7 @@ export async function getRelatedProducts(params: {
     },
     take: limit - sameBrand.length,
     orderBy: { createdAt: "desc" },
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      price: true,
-      compareAtPrice: true,
-      volumeMl: true,
-      concentration: true,
-      gender: true,
-      stock: true,
-      images: { take: 1, orderBy: { position: "asc" }, select: { url: true, alt: true } },
-      brand: { select: { name: true, slug: true } },
-    },
+    select: productCardSelect,
   });
 
   return [...sameBrand, ...fillers];
