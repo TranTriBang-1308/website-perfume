@@ -20,7 +20,17 @@ type Props = {
 // AddToCartButton nhận variantId của variant đang chọn.
 export function VariantSelector({ variants }: Props) {
   const initial = variants.find((v) => v.stock > 0) ?? variants[0];
-  const [selectedId, setSelectedId] = useState(initial.id);
+  const [selectedId, setSelectedId] = useState(initial?.id ?? "");
+
+  if (!initial) {
+    // Data lỗi: sản phẩm hiển thị nhưng chưa có variant nào — admin cần bổ sung
+    return (
+      <p className="text-sm text-burgundy">
+        Sản phẩm chưa có dung tích để bán. Vui lòng quay lại sau.
+      </p>
+    );
+  }
+
   const selected = variants.find((v) => v.id === selectedId) ?? initial;
 
   const hasDiscount = selected.compareAtPrice !== null && selected.compareAtPrice > selected.price;

@@ -112,7 +112,7 @@ export async function PATCH(req: Request, context: RouteContext) {
     });
 
     if (variants !== undefined) await syncProductPriceCache(id);
-    revalidateTag("products");
+    revalidateTag("products", "max");
 
     return NextResponse.json({ data: product, message: "Đã cập nhật" });
   } catch (err) {
@@ -136,7 +136,7 @@ export async function DELETE(_req: Request, context: RouteContext) {
   const { id } = await context.params;
   try {
     await prisma.product.delete({ where: { id } });
-    revalidateTag("products");
+    revalidateTag("products", "max");
     return NextResponse.json({ message: "Đã xóa" });
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2025") {

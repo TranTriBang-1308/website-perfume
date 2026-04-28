@@ -60,7 +60,7 @@ export async function POST(req: Request) {
     });
 
     await syncProductPriceCache(product.id);
-    revalidateTag("products");
+    revalidateTag("products", "max");
 
     return NextResponse.json(
       { data: product, message: "Đã tạo sản phẩm" },
