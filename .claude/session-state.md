@@ -1,6 +1,49 @@
 # Session State — Trạng Thái Phiên Làm Việc
 
-> Cập nhật: 2026-04-21 — **Phase 3 + Phase 4 chính hoàn thành**. Còn lại: Phase 5 (Production).
+> Cập nhật: 2026-04-29 — **Phase 6 (Multi-Variant) hoàn thành**. Đã deploy production.
+
+## Phase 6 — Multi-Variant (2026-04-28 → 2026-04-29)
+
+### Schema (đã làm)
+- `prisma/schema.prisma`: thêm `ProductVariant`, bỏ price/stock/sku/volumeMl/compareAtPrice khỏi `Product`, thêm denormalized `Product.minPrice` + `hasDiscount`. `CartItem.productId → variantId`. `OrderItem` thêm `variantId` (nullable SetNull) + snapshot `volumeMl`.
+- `prisma/backfill-multi-variant.sql`: SQL `BEGIN/COMMIT` 1 transaction — tạo bảng ProductVariant, backfill 1 default variant per product cũ, di `CartItem.productId → variantId`, di `OrderItem.variantId + volumeMl`, drop cột cũ trên Product, tính `minPrice`/`hasDiscount`.
+- `prisma/seed.ts`: mỗi sản phẩm tạo 1 default variant theo dung tích gốc + 2 variant nhỏ (10ml @ 20% giá, 50ml @ 60% giá).
+- `lib/queries/variants.ts` (mới): `syncProductPriceCache(productId)` (gọi sau mọi mutation variant), `getDefaultVariant(productId)`.
+
+### Backend (đã làm)
+- `lib/validations/product.ts`: `productVariantInputSchema` + `productCreateSchema.variants[]` với 2 refine (đúng 1 default, không trùng dung tích). `productUpdateSchema` validate variants ở route handler vì refine không chạy với partial.
+- `lib/validations/cart.ts`: tất cả schema đổi `productId → variantId`.
+- `lib/queries/products.ts`: `productCardSelect` chung — lấy variant mặc định + minPrice/hasDiscount. Sort `price-asc/desc` qua `Product.minPrice` (Prisma không hỗ trợ orderBy aggregate).
+- `lib/queries/cart.ts`: include `variant.product`, convert Decimal sang Number trước khi pass xuống Client.
+- `app/api/cart/route.ts` + `sync/route.ts`: dùng `variantId`, unique constraint `userId_variantId`, check tồn kho qua variant.
+- `app/api/orders/route.ts`: cart items → snapshot `productName + volumeMl + price`, trừ tồn kho `productVariant`, sau commit gọi `syncProductPriceCache` cho các product bị đụng.
+- `app/api/admin/products/route.ts` + `[id]/route.ts`: nested create variants khi tạo. Khi update, sync 3 thao tác trong transaction (delete variant không có trong payload, update có id, create không id) rồi gọi `syncProductPriceCache`.
+- `app/api/products/suggest/route.ts`: dùng `minPrice` + `compareAtPrice` từ variant mặc định.
+- `lib/guest-cart.ts`: localStorage key `parfum:guest-cart`, item `{variantId, quantity}`.
+
+### UI (đã làm)
+- `components/store/variant-selector.tsx` (mới): client component, ban đầu chọn variant đầu còn hàng, click đổi giá + compareAtPrice + tồn kho realtime, gắn vào `AddToCartButton` với `variantId` đang chọn. Guard: trả message "chưa có dung tích" khi `variants` rỗng.
+- `components/store/product-card.tsx`: lấy variant mặc định để hiển thị giá + dung tích, fallback `Number(product.minPrice)` nếu không có default.
+- `components/store/cart-line.tsx`: hiển thị `variant.volumeMl`, gọi `/api/cart` với `variantId`.
+- `components/store/add-to-cart-button.tsx`: prop đổi `productId → variantId`, sync vào guest cart cũng dùng `variantId`.
+- `app/(store)/products/[slug]/page.tsx`: map variants thành `VariantOption[]`, truyền vào `VariantSelector`. Bỏ block giá tĩnh + tồn kho (giờ thuộc selector).
+- `app/(store)/cart`, `checkout/success/[id]`, `account/orders/[id]`, `(admin)/admin/orders/[id]`: hiển thị `item.volumeMl` snapshot.
+- `app/(store)/account/wishlist`: dùng `minPrice` + tổng tồn kho mọi variant để xác định "Hết hàng".
+- `components/admin/product-form.tsx`: thêm section "Dung tích & giá" với `useFieldArray` cho `variants`, radio "Mặc định" (chỉ 1), nút thêm/xóa, validation server hiển thị qua `variantsError`.
+- `app/(admin)/admin/products/page.tsx`: bảng list hiển thị "Dung tích / Giá từ / Tổng tồn", search SKU theo variant qua `variants.some.sku`.
+- `app/(admin)/admin/products/[id]/page.tsx`: load `variants` order theo `position`, truyền vào form qua `initialValues.variants`.
+
+### Bugfix khi deploy
+- **Build error**: Next.js 16 đổi signature `revalidateTag(tag, profile)` cần 2 args — fix `revalidateTag("products", "max")` ở `app/api/admin/products/route.ts:63` và `[id]/route.ts:115/139`.
+- **Runtime error mọi trang trên Vercel** (chưa fix bằng code): root cause là DB production chưa được áp schema mới. Fix bằng cách chạy `prisma/backfill-multi-variant.sql` qua Neon SQL Editor (hoặc `psql $DIRECT_URL -f`) trước khi deploy có hiệu lực.
+
+### Quy ước multi-variant (xem chi tiết `.claude/db-rules.md`)
+- Cart trỏ vào **variant**, không phải product. Wishlist vẫn ở mức product.
+- OrderItem **snapshot** name + volumeMl + price khi mua. Không lookup lại từ variant cho đơn cũ.
+- Mọi mutation variant phải gọi `syncProductPriceCache(productId)` để đồng bộ `Product.minPrice` + `hasDiscount`.
+- Filter giá + sort price dùng `Product.minPrice` (denormalized).
+- Mỗi product phải có **đúng 1** variant `isDefault: true`.
+
 
 ## Phase 4 — Nâng cao ✅ (2026-04-21)
 ### Wishlist

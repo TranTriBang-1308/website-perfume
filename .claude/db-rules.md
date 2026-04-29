@@ -22,16 +22,17 @@
 |---|---|
 | `Brand` | Thương hiệu (Chanel, Dior, …) có `slug` unique |
 | `Category` | Danh mục (Nước hoa nam, nữ, unisex, …) |
-| `Product` | Sản phẩm — có `slug`, `sku` unique, giá `Decimal(12,2)`, `stock` |
+| `Product` | Sản phẩm — `slug` unique + 2 cột denormalized `minPrice`, `hasDiscount` (đồng bộ từ variants) cho filter/sort |
+| `ProductVariant` | **Biến thể dung tích** — mỗi product có 1+ variant (10ml, 50ml, 100ml…), giá/tồn/SKU riêng. Unique `(productId, volumeMl)`, có 1 `isDefault: true` |
 | `ProductImage` | Ảnh sản phẩm (nhiều ảnh, có `position` để sort) |
 
 ### Commerce
 | Model | Mục đích |
 |---|---|
-| `CartItem` | Item trong giỏ — unique theo `(userId, productId)` |
-| `WishlistItem` | Danh sách yêu thích — unique theo `(userId, productId)` |
+| `CartItem` | Item trong giỏ — unique theo `(userId, variantId)` (cart trỏ vào variant, không phải product) |
+| `WishlistItem` | Danh sách yêu thích — unique theo `(userId, productId)` (wishlist ở mức product) |
 | `Order` | Đơn hàng — có `orderNumber` unique (format `PF-XXX-YYY`) |
-| `OrderItem` | Chi tiết đơn — snapshot `productName` và `price` tại thời điểm mua |
+| `OrderItem` | Chi tiết đơn — snapshot `productName`, `volumeMl`, `price` tại thời điểm mua. Có cả `productId` (FK) + `variantId` nullable (SetNull khi variant bị xóa) |
 | `Payment` | Giao dịch thanh toán — `1-1` với Order |
 
 ### Social & Marketing
@@ -75,17 +76,36 @@ CANCELLED  CANCELLED   CANCELLED
 // lib/validations/product.ts
 import { z } from "zod";
 
-export const productCreateSchema = z.object({
-  name: z.string().min(1, "Tên sản phẩm là bắt buộc"),
-  slug: z.string().regex(/^[a-z0-9-]+$/, "Slug không hợp lệ"),
-  price: z.number().positive("Giá phải > 0"),
-  stock: z.number().int().nonnegative(),
+// Schema cho 1 variant (dung tích)
+export const productVariantInputSchema = z.object({
+  id: z.string().cuid().optional(), // có khi sửa, không có khi tạo mới
   volumeMl: z.number().int().positive(),
-  gender: z.enum(["MALE", "FEMALE", "UNISEX"]),
-  concentration: z.enum(["PARFUM", "EDP", "EDT", "EDC"]),
-  brandId: z.string().cuid(),
-  categoryId: z.string().cuid(),
+  price: z.number().positive(),
+  compareAtPrice: z.number().positive().nullable().optional(),
+  stock: z.number().int().nonnegative().default(0),
+  sku: z.string().optional().nullable(),
+  isDefault: z.boolean().default(false),
+  position: z.number().int().nonnegative().default(0),
 });
+
+export const productCreateSchema = z
+  .object({
+    name: z.string().min(1, "Tên sản phẩm là bắt buộc"),
+    slug: z.string().regex(/^[a-z0-9-]+$/, "Slug không hợp lệ"),
+    gender: z.enum(["MALE", "FEMALE", "UNISEX"]),
+    concentration: z.enum(["PARFUM", "EDP", "EDT", "EDC"]),
+    brandId: z.string().cuid(),
+    categoryId: z.string().cuid(),
+    variants: z.array(productVariantInputSchema).min(1),
+  })
+  .refine((d) => d.variants.filter((v) => v.isDefault).length === 1, {
+    message: "Phải có đúng 1 dung tích mặc định",
+    path: ["variants"],
+  })
+  .refine(
+    (d) => new Set(d.variants.map((v) => v.volumeMl)).size === d.variants.length,
+    { message: "Các dung tích không được trùng nhau", path: ["variants"] }
+  );
 
 export type ProductCreateInput = z.infer<typeof productCreateSchema>;
 ```
@@ -125,9 +145,16 @@ const [total, products] = await prisma.$transaction([
   prisma.product.findMany({
     where: { isActive: true },
     select: {
-      id: true, name: true, slug: true, price: true,
+      id: true, name: true, slug: true,
+      minPrice: true, hasDiscount: true,
       images: { take: 1, orderBy: { position: "asc" } },
       brand: { select: { name: true, slug: true } },
+      // Lấy variant mặc định để hiển thị giá/dung tích trên card
+      variants: {
+        where: { isDefault: true },
+        take: 1,
+        select: { id: true, volumeMl: true, price: true, compareAtPrice: true, stock: true },
+      },
     },
     skip: (page - 1) * limit,
     take: limit,
@@ -135,6 +162,11 @@ const [total, products] = await prisma.$transaction([
   }),
 ]);
 ```
+
+### Filter/sort theo giá
+- Filter `minPrice/maxPrice`: dùng `Product.minPrice` (denormalized) — không filter qua relation `variants`.
+- Sort `price-asc/desc`: `orderBy: { minPrice: "asc" }` — Prisma không hỗ trợ orderBy theo aggregate của relation, nên buộc phải denormalize.
+- Sau khi tạo/sửa/xóa variant: gọi `syncProductPriceCache(productId)` từ `lib/queries/variants.ts` để cập nhật `minPrice` + `hasDiscount`.
 
 ### Soft delete
 - Dùng `isActive: false` thay vì xóa thật với `Product`, `Brand`, `Category`
@@ -167,3 +199,22 @@ export async function POST(req: Request) {
 - **Dev nhanh**: `npm run db:push` (không tạo migration file)
 - **Trước PR**: `npm run db:migrate -- --name <tên_mô_tả>` → commit cả migration
 - **KHÔNG** sửa migration đã merge — tạo migration mới
+- **Migration có data move** (ví dụ Product → ProductVariant): viết SQL thủ công trong `prisma/*.sql` rồi chạy qua `psql $DIRECT_URL -f file.sql` BEFORE chạy `db push --accept-data-loss`. Xem ví dụ `prisma/backfill-multi-variant.sql`.
+
+## Multi-Variant — Quy ước
+
+### Ngữ nghĩa
+- 1 sản phẩm có thể có nhiều dung tích (variant). Mỗi variant có **giá, tồn kho, SKU, compareAtPrice riêng**.
+- Phải có **đúng 1 variant mặc định** (`isDefault: true`) — dùng làm giá hiển thị trên product card và để filter.
+- `Product.minPrice` = `MIN(variants.price)` — denormalized cho filter/sort.
+- `Product.hasDiscount` = `true` nếu có ít nhất 1 variant có `compareAtPrice` — dùng cho filter "đang sale".
+
+### Quy tắc bất biến
+- Cart trỏ vào **variant**, không phải product (`CartItem.variantId`).
+- OrderItem **snapshot** `productName`, `volumeMl`, `price` tại thời điểm mua. Không lấy lại từ variant khi hiển thị đơn cũ.
+- Khi xóa variant: `CartItem` cascade-delete (mất khỏi giỏ); `OrderItem.variantId` SetNull (giữ snapshot, đơn cũ vẫn hiển thị đúng).
+- Mọi mutation variant (create/update/delete) phải gọi `syncProductPriceCache(productId)` để đồng bộ `Product.minPrice` + `hasDiscount`.
+
+### UI selector
+- Component `VariantSelector` ở `components/store/variant-selector.tsx` — hiển thị danh sách dung tích, click đổi giá, gắn vào `AddToCartButton` với `variantId` đang chọn.
+- Variant hết hàng: hiển thị nút disabled với line-through, không cho add.
