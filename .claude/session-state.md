@@ -1,8 +1,8 @@
 # Session State — Trạng Thái Phiên Làm Việc
 
-> Cập nhật: 2026-04-29 — **Phase 6 (Multi-Variant) hoàn thành**. Đã deploy production.
+> Cập nhật: 2026-04-29 — **Multi-Variant (gộp vào Phase 2) hoàn thành**. Đã deploy production.
 
-## Phase 6 — Multi-Variant (2026-04-28 → 2026-04-29)
+## Multi-Variant — subsection cuối Phase 2 (2026-04-28 → 2026-04-29)
 
 ### Schema (đã làm)
 - `prisma/schema.prisma`: thêm `ProductVariant`, bỏ price/stock/sku/volumeMl/compareAtPrice khỏi `Product`, thêm denormalized `Product.minPrice` + `hasDiscount`. `CartItem.productId → variantId`. `OrderItem` thêm `variantId` (nullable SetNull) + snapshot `volumeMl`.

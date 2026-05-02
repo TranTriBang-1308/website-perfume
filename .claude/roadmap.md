@@ -3,7 +3,7 @@
 ## Giai Đoạn 1 — Nền Tảng ✅ HOÀN THÀNH
 - [x] Khởi tạo Next.js 16 project với TypeScript + Tailwind v4
 - [x] Cài dependencies: Prisma v6, NextAuth v5, Zod, bcryptjs, react-hook-form
-- [x] Thiết kế database schema (13 models, 7 enums)
+- [x] Thiết kế database schema (14 models, 7 enums — đã có `ProductVariant` từ vòng multi-variant)
 - [x] Cấu trúc thư mục với route groups `(store)` + `(admin)` + `(auth)`
 - [x] Prisma client singleton (`lib/prisma.ts`)
 - [x] Utils: `cn`, `formatVND`, `slugify`, `generateOrderNumber`
@@ -68,6 +68,35 @@
 - [x] Account layout có sidebar nav (thêm mục **Bảo mật**)
 - [x] Đổi mật khẩu (`/account/security`)
 
+### Multi-Variant (Dung Tích) ✅ (2026-04-29)
+Tách 1 sản phẩm thành nhiều biến thể dung tích, mỗi dung tích có giá/tồn kho riêng.
+
+#### Schema
+- [x] Thêm model `ProductVariant` (productId, volumeMl, price, compareAtPrice, stock, sku, isDefault, position) — unique `(productId, volumeMl)`
+- [x] Bỏ `price/compareAtPrice/stock/sku/volumeMl` khỏi `Product`
+- [x] Thêm 2 cột denormalized `Product.minPrice` + `hasDiscount` cho filter/sort
+- [x] `CartItem.productId → variantId` (cart trỏ vào variant)
+- [x] `OrderItem`: thêm `variantId` (nullable, SetNull), thêm snapshot `volumeMl`
+- [x] SQL backfill `prisma/backfill-multi-variant.sql` — giữ data cũ + tạo 1 default variant cho mỗi product cũ
+- [x] Helper `lib/queries/variants.ts`: `syncProductPriceCache()` đồng bộ minPrice/hasDiscount; `getDefaultVariant()`
+
+#### Backend
+- [x] `lib/validations/product.ts`: schema `productCreateSchema` với array `variants` + refine "đúng 1 default + không trùng dung tích"
+- [x] `lib/validations/cart.ts`: `variantId` thay `productId`
+- [x] `lib/queries/products.ts`: select gắn variant mặc định, filter `Product.minPrice`, sort `minPrice asc/desc`
+- [x] `lib/queries/cart.ts`: query qua relation `variant.product`
+- [x] `app/api/cart/*`: dùng `variantId` + check tồn kho variant
+- [x] `app/api/orders`: trừ tồn kho variant + snapshot `volumeMl`
+- [x] `app/api/admin/products/*`: tạo/sửa kèm variants (sync, delete cũ, create mới) + gọi `syncProductPriceCache` sau mỗi mutation
+- [x] `lib/guest-cart.ts`: localStorage chuyển sang `variantId`
+
+#### UI
+- [x] `components/store/variant-selector.tsx` (mới) — chọn dung tích, đổi giá realtime, AddToCart với đúng variantId, guard variants rỗng
+- [x] `components/store/product-card.tsx` — hiển thị variant mặc định, badge sale theo variant
+- [x] `components/store/cart-line.tsx` — hiển thị `volumeMl` của variant
+- [x] Trang chi tiết, cart, checkout, success, account/orders, admin order detail, admin product list/edit — đều cập nhật
+- [x] Admin product form có section "Dung tích & giá" với add/remove rows, radio "Mặc định"
+
 ## Giai Đoạn 3 — Admin Dashboard ✅ HOÀN THÀNH
 ### Vòng 1 ✅ (2026-04-20)
 - [x] Layout admin riêng, sidebar navigation với active state
@@ -104,35 +133,6 @@
 - [x] Monitoring: `@vercel/analytics` cài + mount trong root layout
 - [x] Deploy: cần bước thủ công (Neon, Vercel, Resend, Cloudinary) — xem phần hướng dẫn
 - [ ] Sentry: placeholder trong `.env.example`, tích hợp khi user cung cấp DSN
-
-## Giai Đoạn 6 — Multi-Variant (Dung Tích) ✅ (2026-04-29)
-Tách 1 sản phẩm thành nhiều biến thể dung tích, mỗi dung tích có giá/tồn kho riêng.
-
-### Schema
-- [x] Thêm model `ProductVariant` (productId, volumeMl, price, compareAtPrice, stock, sku, isDefault, position) — unique `(productId, volumeMl)`
-- [x] Bỏ `price/compareAtPrice/stock/sku/volumeMl` khỏi `Product`
-- [x] Thêm 2 cột denormalized `Product.minPrice` + `hasDiscount` cho filter/sort
-- [x] `CartItem.productId → variantId` (cart trỏ vào variant)
-- [x] `OrderItem`: thêm `variantId` (nullable, SetNull), thêm snapshot `volumeMl`
-- [x] SQL backfill `prisma/backfill-multi-variant.sql` — giữ data cũ + tạo 1 default variant cho mỗi product cũ
-- [x] Helper `lib/queries/variants.ts`: `syncProductPriceCache()` đồng bộ minPrice/hasDiscount; `getDefaultVariant()`
-
-### Backend
-- [x] `lib/validations/product.ts`: schema `productCreateSchema` với array `variants` + refine "đúng 1 default + không trùng dung tích"
-- [x] `lib/validations/cart.ts`: `variantId` thay `productId`
-- [x] `lib/queries/products.ts`: select gắn variant mặc định, filter `Product.minPrice`, sort `minPrice asc/desc`
-- [x] `lib/queries/cart.ts`: query qua relation `variant.product`
-- [x] `app/api/cart/*`: dùng `variantId` + check tồn kho variant
-- [x] `app/api/orders`: trừ tồn kho variant + snapshot `volumeMl`
-- [x] `app/api/admin/products/*`: tạo/sửa kèm variants (sync, delete cũ, create mới) + gọi `syncProductPriceCache` sau mỗi mutation
-- [x] `lib/guest-cart.ts`: localStorage chuyển sang `variantId`
-
-### UI
-- [x] `components/store/variant-selector.tsx` (mới) — chọn dung tích, đổi giá realtime, AddToCart với đúng variantId, guard variants rỗng
-- [x] `components/store/product-card.tsx` — hiển thị variant mặc định, badge sale theo variant
-- [x] `components/store/cart-line.tsx` — hiển thị `volumeMl` của variant
-- [x] Trang chi tiết, cart, checkout, success, account/orders, admin order detail, admin product list/edit — đều cập nhật
-- [x] Admin product form có section "Dung tích & giá" với add/remove rows, radio "Mặc định"
 
 ## Ghi Chú Tiến Độ
 - Khi hoàn thành một task, cập nhật file này (`[ ]` → `[x]`)
