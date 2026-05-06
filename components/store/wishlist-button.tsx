@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/toast";
 
 type Props = {
   productId: string;
@@ -20,8 +21,10 @@ export function WishlistButton({
 }: Props) {
   const router = useRouter();
   const { status } = useSession();
+  const toast = useToast();
   const [inWishlist, setInWishlist] = useState(initialInWishlist);
   const [loading, setLoading] = useState(false);
+  const [pop, setPop] = useState(false);
   const [, startTransition] = useTransition();
 
   const onClick = async () => {
@@ -40,7 +43,15 @@ export function WishlistButton({
     if (res.ok) {
       const json = await res.json();
       setInWishlist(json.data.inWishlist);
+      setPop(true);
+      setTimeout(() => setPop(false), 400);
+      toast.show(
+        json.data.inWishlist ? "Đã thêm vào yêu thích" : "Đã xóa khỏi yêu thích",
+        "success"
+      );
       startTransition(() => router.refresh());
+    } else {
+      toast.show("Có lỗi xảy ra. Vui lòng thử lại.", "error");
     }
   };
 
@@ -67,8 +78,10 @@ export function WishlistButton({
         disabled={loading}
         aria-label={inWishlist ? "Xóa khỏi yêu thích" : "Thêm vào yêu thích"}
         className={cn(
-          "inline-flex h-10 w-10 items-center justify-center border border-[color:var(--color-border-soft)] bg-white transition-colors",
-          inWishlist ? "text-burgundy" : "text-ink-muted hover:text-ink",
+          "inline-flex h-10 w-10 items-center justify-center border border-border-soft bg-white transition-all duration-300 ease-luxe",
+          "hover:border-champagne hover:shadow-soft",
+          inWishlist ? "text-burgundy" : "text-ink-muted hover:text-burgundy",
+          pop && "scale-125",
           className
         )}
       >
@@ -83,10 +96,11 @@ export function WishlistButton({
       onClick={onClick}
       disabled={loading}
       className={cn(
-        "inline-flex items-center gap-2 border px-6 py-3 text-sm transition-colors",
+        "inline-flex items-center gap-2 border px-6 py-3 text-sm transition-all duration-300 ease-luxe",
         inWishlist
-          ? "border-burgundy text-burgundy"
+          ? "border-burgundy text-burgundy bg-burgundy/5"
           : "border-ink text-ink hover:bg-ink hover:text-white",
+        pop && "scale-105",
         className
       )}
     >

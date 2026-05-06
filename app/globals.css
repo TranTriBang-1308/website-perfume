@@ -1,15 +1,42 @@
 @import "tailwindcss";
 
 @theme {
+  /* Neutral ink scale */
   --color-ink: #0a0a0a;
+  --color-ink-soft: #1a1a1a;
   --color-ink-muted: #6b6b6b;
-  --color-cream: #faf7f2;
-  --color-champagne: #c9a961;
-  --color-burgundy: #6d1a2a;
-  --color-border-soft: #e5e0d8;
+  --color-ink-faint: #9a9a9a;
 
+  /* Cream / paper */
+  --color-cream: #faf7f2;
+  --color-cream-warm: #f5efe6;
+  --color-paper: #ffffff;
+
+  /* Champagne accent (gold tones) */
+  --color-champagne: #c9a961;
+  --color-champagne-light: #e2c98a;
+  --color-champagne-dark: #a8893f;
+
+  /* Burgundy accent */
+  --color-burgundy: #6d1a2a;
+  --color-burgundy-light: #8b2538;
+
+  /* Borders */
+  --color-border-soft: #e5e0d8;
+  --color-border-faint: #f0ebe2;
+
+  /* Typography */
   --font-display: "Cormorant Garamond", "Playfair Display", Georgia, serif;
   --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+
+  /* Luxury shadows — siêu mềm, không xám đậm */
+  --shadow-soft: 0 1px 2px rgba(10, 10, 10, 0.04), 0 4px 12px rgba(10, 10, 10, 0.04);
+  --shadow-luxe: 0 2px 4px rgba(10, 10, 10, 0.04), 0 12px 32px rgba(10, 10, 10, 0.06);
+  --shadow-elevate: 0 4px 8px rgba(10, 10, 10, 0.06), 0 24px 48px rgba(10, 10, 10, 0.08);
+
+  /* Animations */
+  --ease-luxe: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 html, body {
@@ -21,9 +48,216 @@ body {
   color: var(--color-ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 h1, h2, h3 {
   font-family: var(--font-display);
   letter-spacing: -0.01em;
+}
+
+/* Scrollbar tinh tế */
+@media (min-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-cream);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-border-soft);
+    border-radius: 4px;
+    border: 2px solid var(--color-cream);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-champagne);
+  }
+}
+
+/* Selection sang trọng */
+::selection {
+  background: var(--color-champagne);
+  color: var(--color-ink);
+}
+
+/* Focus ring sang trọng */
+*:focus-visible {
+  outline: 2px solid var(--color-champagne);
+  outline-offset: 2px;
+}
+
+/* ============ Animations ============ */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in-scale {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse-soft {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Utility classes */
+@utility animate-fade-in {
+  animation: fade-in 0.6s var(--ease-luxe) both;
+}
+
+@utility animate-fade-in-up {
+  animation: fade-in-up 0.7s var(--ease-luxe) both;
+}
+
+@utility animate-fade-in-scale {
+  animation: fade-in-scale 0.5s var(--ease-luxe) both;
+}
+
+@utility animate-slide-in-right {
+  animation: slide-in-right 0.4s var(--ease-luxe) both;
+}
+
+@utility animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
+/* Shimmer skeleton background */
+@utility skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-border-faint) 0%,
+    var(--color-border-soft) 50%,
+    var(--color-border-faint) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+/* Gold gradient text */
+@utility text-gold-gradient {
+  background: linear-gradient(135deg, var(--color-champagne-dark) 0%, var(--color-champagne-light) 50%, var(--color-champagne) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Glass surface — backdrop blur sang trọng */
+@utility surface-glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+}
+
+@utility surface-glass-dark {
+  background: rgba(10, 10, 10, 0.65);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+}
+
+/* Card luxury */
+@utility card-luxe {
+  background: var(--color-paper);
+  border: 1px solid var(--color-border-soft);
+  box-shadow: var(--shadow-soft);
+  transition: box-shadow 0.4s var(--ease-luxe), border-color 0.3s var(--ease-luxe), transform 0.4s var(--ease-luxe);
+}
+
+@utility card-luxe-hover {
+  &:hover {
+    box-shadow: var(--shadow-luxe);
+    border-color: var(--color-champagne);
+  }
+}
+
+/* Underline sang trọng — bung từ giữa */
+@utility link-underline-center {
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -2px;
+    height: 1px;
+    width: 0;
+    background: currentColor;
+    transition: width 0.4s var(--ease-luxe);
+    transform: translateX(-50%);
+  }
+  &:hover::after {
+    width: 100%;
+  }
+}
+
+/* Gradient divider tinh tế */
+@utility divider-gradient {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    var(--color-border-soft) 20%,
+    var(--color-champagne) 50%,
+    var(--color-border-soft) 80%,
+    transparent 100%
+  );
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -20,7 +20,13 @@ export default async function CheckoutPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
-      <h1 className="font-display text-4xl sm:text-5xl">Thanh toán</h1>
+      <header className="border-b border-border-soft pb-6">
+        <p className="flex items-center gap-3 text-[11px] font-medium uppercase tracking-[0.3em] text-champagne-dark">
+          <span aria-hidden className="h-px w-10 bg-champagne" />
+          Hoàn tất đơn hàng
+        </p>
+        <h1 className="mt-3 font-display text-4xl font-light leading-tight sm:text-5xl">Thanh toán</h1>
+      </header>
       <div className="mt-10">
         <CheckoutForm addresses={addresses} subtotal={subtotal} />
       </div>

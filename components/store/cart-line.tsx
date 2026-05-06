@@ -49,48 +49,67 @@ export function CartLine({ item }: Props) {
   };
 
   return (
-    <div className="flex gap-4 border-b border-[color:var(--color-border-soft)] py-6">
-      <Link href={`/products/${product.slug}`} className="relative h-28 w-24 flex-shrink-0 overflow-hidden bg-white">
+    <div className="group relative flex gap-4 border border-border-soft bg-white p-4 shadow-soft transition-all duration-300 ease-luxe hover:border-champagne hover:shadow-luxe sm:gap-6 sm:p-5">
+      <Link
+        href={`/products/${product.slug}`}
+        className="relative h-32 w-24 shrink-0 overflow-hidden border border-border-soft bg-white sm:h-36 sm:w-28"
+      >
         {image ? (
-          <Image src={image.url} alt={image.alt ?? product.name} fill sizes="96px" className="object-cover" />
+          <Image
+            src={image.url}
+            alt={image.alt ?? product.name}
+            fill
+            sizes="112px"
+            className="object-cover transition-transform duration-500 ease-luxe group-hover:scale-105"
+          />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-champagne/20 to-burgundy/5 text-xs text-ink-muted">
+          <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-champagne/20 to-burgundy/5 text-xs text-ink-muted">
             {product.brand.name}
           </div>
         )}
       </Link>
 
-      <div className="flex-1 space-y-2">
+      <div className="flex flex-1 flex-col justify-between gap-3">
         <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-xs uppercase tracking-widest text-ink-muted">{product.brand.name}</p>
-            <Link href={`/products/${product.slug}`} className="font-display text-lg hover:underline">
+          <div className="space-y-1">
+            <p className="text-[10px] uppercase tracking-[0.25em] text-ink-faint">
+              {product.brand.name}
+            </p>
+            <Link
+              href={`/products/${product.slug}`}
+              className="block font-display text-lg leading-tight text-ink transition-colors hover:text-champagne-dark"
+            >
               {product.name}
             </Link>
             <p className="text-xs text-ink-muted">
               {product.concentration} · {variant.volumeMl}ml
             </p>
+            <p className="text-xs text-ink-faint">
+              Đơn giá: {formatVND(price)}
+            </p>
           </div>
-          <p className="font-medium whitespace-nowrap">{formatVND(price * item.quantity)}</p>
+          <p className="whitespace-nowrap font-display text-lg text-ink">
+            {formatVND(price * item.quantity)}
+          </p>
         </div>
 
         <div className="flex items-center justify-between">
-          <div className="inline-flex items-center border border-[color:var(--color-border-soft)]">
+          <div className="inline-flex items-center border border-border-soft bg-cream-warm/40">
             <button
               type="button"
               onClick={() => updateQty(item.quantity - 1)}
               disabled={pending}
-              className="h-9 w-9 text-ink-muted hover:text-ink"
+              className="h-9 w-9 text-ink-muted transition-colors hover:bg-ink hover:text-white disabled:opacity-50"
               aria-label="Giảm số lượng"
             >
               −
             </button>
-            <span className="w-10 text-center text-sm">{item.quantity}</span>
+            <span className="w-10 text-center text-sm font-medium">{item.quantity}</span>
             <button
               type="button"
               onClick={() => updateQty(item.quantity + 1)}
               disabled={pending}
-              className="h-9 w-9 text-ink-muted hover:text-ink"
+              className="h-9 w-9 text-ink-muted transition-colors hover:bg-ink hover:text-white disabled:opacity-50"
               aria-label="Tăng số lượng"
             >
               +
@@ -100,13 +119,24 @@ export function CartLine({ item }: Props) {
             type="button"
             onClick={removeItem}
             disabled={pending}
-            className="text-xs uppercase tracking-widest text-burgundy hover:underline"
+            className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.2em] text-ink-faint transition-colors hover:text-burgundy"
           >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-3.5 w-3.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+            </svg>
             Xóa
           </button>
         </div>
 
-        {error && <p className="text-xs text-burgundy">{error}</p>}
+        {error && (
+          <p className="flex items-center gap-1.5 text-xs text-burgundy">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5">
+              <circle cx="12" cy="12" r="10" />
+              <path strokeLinecap="round" d="M12 8v4M12 16h.01" />
+            </svg>
+            {error}
+          </p>
+        )}
       </div>
     </div>
   );

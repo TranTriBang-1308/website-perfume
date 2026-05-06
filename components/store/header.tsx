@@ -3,11 +3,12 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { UserMenu } from "@/components/store/user-menu";
 import { HeaderSearch } from "@/components/store/header-search";
+import { TopBar } from "@/components/store/top-bar";
 
-// Logo hình hoa tinh giản, dùng champagne-on-ink cho cảm giác sang trọng
+// Logo hình hoa tinh giản — bound tile vàng champagne trên ink, có viền sáng nhẹ
 function LogoMark() {
   return (
-    <div className="relative flex h-11 w-11 items-center justify-center bg-ink text-champagne">
+    <div className="relative flex h-11 w-11 items-center justify-center bg-linear-to-br from-ink to-ink-soft text-champagne ring-1 ring-champagne/30 shadow-soft">
       <svg viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">
         <circle cx="12" cy="6" r="3" />
         <circle cx="18" cy="12" r="3" />
@@ -19,7 +20,6 @@ function LogoMark() {
   );
 }
 
-// Icon + label cho nút phải header (dùng chung cho Cửa hàng, Hỗ trợ, Yêu thích, Giỏ hàng)
 function HeaderIconLink({
   href,
   label,
@@ -36,17 +36,18 @@ function HeaderIconLink({
   return (
     <Link
       href={href}
-      className={`group relative flex flex-col items-center gap-1 text-ink-muted transition-colors hover:text-ink ${className}`}
+      aria-label={label}
+      className={`group relative flex flex-col items-center gap-1 text-ink-muted transition-colors duration-300 ease-luxe hover:text-ink ${className}`}
     >
       <span className="relative">
         {icon}
         {badge !== undefined && badge > 0 && (
-          <span className="absolute -right-2 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-burgundy px-1 text-[10px] font-medium text-white">
-            {badge}
+          <span className="absolute -right-2 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-burgundy px-1 text-[10px] font-medium text-white shadow-soft">
+            {badge > 99 ? "99+" : badge}
           </span>
         )}
       </span>
-      <span className="text-xs">{label}</span>
+      <span className="text-[11px] tracking-wider">{label}</span>
     </Link>
   );
 }
@@ -74,18 +75,20 @@ export async function Header() {
     : [0, 0];
 
   return (
-    <header className="sticky top-0 z-40 border-b border-[color:var(--color-border-soft)] bg-cream/95 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-border-soft surface-glass">
+      <TopBar />
+
       {/* Row 1 — brand / search / icon buttons */}
       <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-4 sm:gap-6 sm:px-6 lg:gap-10 lg:px-8">
         {/* Brand */}
-        <Link href="/" className="flex min-w-0 items-center gap-3 shrink">
+        <Link href="/" className="group flex min-w-0 items-center gap-3 shrink">
           <div className="hidden flex-col sm:flex">
-            <span className="text-[10px] uppercase tracking-[0.25em] text-ink-muted">
+            <span className="text-[10px] uppercase tracking-[0.3em] text-ink-faint">
               Chào mừng đến với
             </span>
             <div className="mt-1 flex items-center gap-3">
               <LogoMark />
-              <span className="font-display text-2xl leading-none tracking-tight">
+              <span className="font-display text-2xl leading-none tracking-tight transition-colors duration-300 group-hover:text-champagne-dark">
                 Whisper of Scent
               </span>
             </div>
@@ -115,7 +118,7 @@ export async function Header() {
             }
           />
           <HeaderIconLink
-            href="/search"
+            href="/faq"
             label="Hỗ trợ"
             className="hidden sm:flex"
             icon={
@@ -157,24 +160,24 @@ export async function Header() {
       </div>
 
       {/* Row 2 — primary nav */}
-      <nav className="border-t border-[color:var(--color-border-soft)]">
-        <ul className="mx-auto flex max-w-7xl items-center gap-6 overflow-x-auto px-4 py-3 text-xs font-medium uppercase tracking-[0.15em] sm:gap-8 sm:px-6 lg:justify-center lg:gap-12 lg:px-8">
+      <nav className="border-t border-border-faint">
+        <ul className="mx-auto flex max-w-7xl items-center gap-6 overflow-x-auto px-4 py-3 text-xs font-medium uppercase tracking-[0.18em] sm:gap-8 sm:px-6 lg:justify-center lg:gap-12 lg:px-8">
           {navLinks.map((link) => (
             <li key={link.label} className="shrink-0">
               <Link
                 href={link.href}
-                className={`group relative inline-block py-1 transition-colors ${
+                className={`group relative inline-block py-1 transition-colors duration-300 ease-luxe ${
                   link.accent
-                    ? "text-burgundy hover:text-burgundy"
+                    ? "text-burgundy hover:text-burgundy-light"
                     : "text-ink-muted hover:text-ink"
                 }`}
               >
                 <span className="relative">
                   {link.label}
-                  {/* Gạch chân sang trọng: bung ra từ giữa, dùng champagne cho mục thường, burgundy cho Hot Deals */}
+                  {/* Gạch chân sang trọng: bung ra từ giữa */}
                   <span
                     aria-hidden="true"
-                    className={`pointer-events-none absolute -bottom-1 left-1/2 h-px w-0 -translate-x-1/2 transition-all duration-500 ease-out group-hover:w-full ${
+                    className={`pointer-events-none absolute -bottom-1 left-1/2 h-px w-0 -translate-x-1/2 transition-all duration-500 ease-luxe group-hover:w-full ${
                       link.accent ? "bg-burgundy" : "bg-champagne"
                     }`}
                   />
@@ -186,7 +189,7 @@ export async function Header() {
       </nav>
 
       {/* Search bar (mobile, below nav) */}
-      <div className="border-t border-[color:var(--color-border-soft)] px-4 py-3 md:hidden">
+      <div className="border-t border-border-faint px-4 py-3 md:hidden">
         <HeaderSearch />
       </div>
     </header>

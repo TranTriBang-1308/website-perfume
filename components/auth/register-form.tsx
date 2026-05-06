@@ -56,47 +56,81 @@ export function RegisterForm() {
 
   return (
     <div className="space-y-6">
-      <div className="text-center space-y-2">
-        <h1 className="font-display text-3xl">Tạo tài khoản</h1>
-        <p className="text-sm text-ink-muted">Khám phá thế giới nước hoa cùng Parfum</p>
+      <div className="space-y-2 text-center">
+        <p className="text-[11px] font-medium uppercase tracking-[0.3em] text-champagne-dark">
+          Join Us
+        </p>
+        <h1 className="font-display text-3xl font-light sm:text-4xl">Tạo tài khoản</h1>
+        <p className="text-sm text-ink-muted">Khám phá thế giới nước hoa cùng Whisper of Scent</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-        <FormField label="Họ và tên" htmlFor="name" error={errors.name?.message}>
-          <Input id="name" autoComplete="name" {...register("name")} />
+        <FormField label="Họ và tên" htmlFor="name" error={errors.name?.message} required>
+          <Input id="name" autoComplete="name" placeholder="Nguyễn Văn A" {...register("name")} />
         </FormField>
 
-        <FormField label="Email" htmlFor="email" error={errors.email?.message}>
-          <Input id="email" type="email" autoComplete="email" {...register("email")} />
+        <FormField label="Email" htmlFor="email" error={errors.email?.message} required>
+          <Input id="email" type="email" autoComplete="email" placeholder="email@example.com" {...register("email")} />
         </FormField>
 
-        <FormField label="Mật khẩu" htmlFor="password" error={errors.password?.message}>
-          <Input id="password" type="password" autoComplete="new-password" {...register("password")} />
+        <FormField
+          label="Mật khẩu"
+          htmlFor="password"
+          error={errors.password?.message}
+          hint="Tối thiểu 8 ký tự"
+          required
+        >
+          <Input id="password" type="password" autoComplete="new-password" placeholder="••••••••" {...register("password")} />
         </FormField>
 
         <FormField
           label="Nhập lại mật khẩu"
           htmlFor="confirmPassword"
           error={errors.confirmPassword?.message}
+          required
         >
           <Input
             id="confirmPassword"
             type="password"
             autoComplete="new-password"
+            placeholder="••••••••"
             {...register("confirmPassword")}
           />
         </FormField>
 
-        {serverError && <p className="text-sm text-burgundy">{serverError}</p>}
+        {serverError && (
+          <p className="flex items-center gap-2 border border-burgundy/30 bg-burgundy/5 p-3 text-sm text-burgundy">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4 shrink-0">
+              <circle cx="12" cy="12" r="10" />
+              <path strokeLinecap="round" d="M12 8v4M12 16h.01" />
+            </svg>
+            {serverError}
+          </p>
+        )}
 
-        <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? "Đang xử lý..." : "Đăng ký"}
+        <Button type="submit" className="w-full" loading={loading} size="lg">
+          Đăng ký
         </Button>
+
+        <p className="text-center text-[11px] text-ink-faint">
+          Bằng việc đăng ký, bạn đồng ý với{" "}
+          <Link href="/policies/terms" className="underline-offset-2 hover:text-ink hover:underline">
+            Điều khoản
+          </Link>{" "}
+          và{" "}
+          <Link href="/policies/privacy" className="underline-offset-2 hover:text-ink hover:underline">
+            Chính sách bảo mật
+          </Link>
+          .
+        </p>
       </form>
 
       <p className="text-center text-sm text-ink-muted">
         Đã có tài khoản?{" "}
-        <Link href="/login" className="text-ink underline underline-offset-4">
+        <Link
+          href="/login"
+          className="font-medium text-ink underline-offset-4 transition-colors hover:text-champagne-dark hover:underline"
+        >
           Đăng nhập
         </Link>
       </p>

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { Button } from "@/components/ui/button";
 import { DeleteButton } from "@/components/admin/delete-button";
+import { AdminPageHeader } from "@/components/admin/page-header";
 
 export const metadata = { title: "Danh mục — Admin" };
 
@@ -12,50 +12,44 @@ export default async function AdminCategoriesPage() {
   });
 
   return (
-    <div className="space-y-6">
-      <header className="flex items-center justify-between">
-        <div>
-          <h1 className="font-display text-3xl">Danh mục</h1>
-          <p className="mt-1 text-sm text-ink-muted">
-            {categories.length} danh mục
-          </p>
-        </div>
-        <Link href="/admin/categories/new">
-          <Button>+ Thêm danh mục</Button>
-        </Link>
-      </header>
+    <div className="space-y-6 animate-fade-in">
+      <AdminPageHeader
+        title="Danh mục"
+        description={`${categories.length} danh mục`}
+        action={{ href: "/admin/categories/new", label: "Thêm danh mục" }}
+      />
 
-      <div className="border border-[color:var(--color-border-soft)] bg-white">
+      <div className="overflow-hidden border border-border-soft bg-white shadow-soft">
         {categories.length === 0 ? (
-          <p className="p-6 text-sm text-ink-muted">Chưa có danh mục nào.</p>
+          <p className="p-12 text-center text-sm text-ink-muted">Chưa có danh mục nào.</p>
         ) : (
           <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-xs uppercase tracking-widest text-ink-muted">
-                <th className="px-6 py-3">Tên</th>
-                <th className="px-6 py-3">Slug</th>
-                <th className="px-6 py-3 text-center">Sản phẩm</th>
-                <th className="px-6 py-3 text-right">Hành động</th>
+            <thead className="bg-cream-warm/40">
+              <tr className="text-left text-[10px] uppercase tracking-[0.2em] text-ink-muted">
+                <th className="px-6 py-3 font-medium">Tên</th>
+                <th className="px-6 py-3 font-medium">Slug</th>
+                <th className="px-6 py-3 text-center font-medium">Sản phẩm</th>
+                <th className="px-6 py-3 text-right font-medium">Hành động</th>
               </tr>
             </thead>
             <tbody>
               {categories.map((c) => (
                 <tr
                   key={c.id}
-                  className="border-t border-[color:var(--color-border-soft)]"
+                  className="border-t border-border-soft transition-colors hover:bg-cream-warm/30"
                 >
-                  <td className="px-6 py-3 font-medium">{c.name}</td>
-                  <td className="px-6 py-3 font-mono text-xs text-ink-muted">
-                    {c.slug}
+                  <td className="px-6 py-3.5 font-medium text-ink">{c.name}</td>
+                  <td className="px-6 py-3.5 font-mono text-xs text-ink-faint">/{c.slug}</td>
+                  <td className="px-6 py-3.5 text-center">
+                    <span className="inline-flex h-6 min-w-6 items-center justify-center bg-cream-warm px-2 text-xs font-medium text-ink">
+                      {c._count.products}
+                    </span>
                   </td>
-                  <td className="px-6 py-3 text-center text-ink-muted">
-                    {c._count.products}
-                  </td>
-                  <td className="px-6 py-3">
+                  <td className="px-6 py-3.5">
                     <div className="flex items-center justify-end gap-3">
                       <Link
                         href={`/admin/categories/${c.id}`}
-                        className="text-xs uppercase tracking-widest text-ink-muted hover:text-ink"
+                        className="text-[11px] uppercase tracking-[0.18em] text-ink-muted transition-colors hover:text-champagne-dark"
                       >
                         Sửa
                       </Link>

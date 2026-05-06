@@ -9,6 +9,7 @@ import { VariantSelector, type VariantOption } from "@/components/store/variant-
 import { WishlistButton } from "@/components/store/wishlist-button";
 import { ReviewForm } from "@/components/store/review-form";
 import { hasUserPurchased, getUserReview } from "@/lib/queries/reviews";
+import { SectionHeader } from "@/components/ui/section-header";
 
 type PageProps = { params: Promise<{ slug: string }> };
 
@@ -63,7 +64,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
     categoryId: product.categoryId,
   });
 
-  // Kiểm tra sản phẩm đã trong wishlist + đã mua + đã review hay chưa
+  // Kiểm tra wishlist + đã mua + đã review
   const session = await auth();
   let inWishlist = false;
   let canReview = false;
@@ -82,7 +83,6 @@ export default async function ProductDetailPage({ params }: PageProps) {
     existingReview = userReview ? { rating: userReview.rating, comment: userReview.comment } : null;
   }
 
-  // Chuyển variants từ Prisma (Decimal) sang plain object để truyền xuống Client Component
   const variantOptions: VariantOption[] = product.variants.map((v) => ({
     id: v.id,
     volumeMl: v.volumeMl,
@@ -100,55 +100,78 @@ export default async function ProductDetailPage({ params }: PageProps) {
       : null;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-      <nav className="mb-8 text-xs uppercase tracking-widest text-ink-muted">
-        <Link href="/" className="hover:text-ink">Trang chủ</Link>
-        <span className="mx-2">/</span>
-        <Link href="/products" className="hover:text-ink">Sản phẩm</Link>
-        <span className="mx-2">/</span>
-        <span className="text-ink">{product.name}</span>
+    <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      {/* Breadcrumb */}
+      <nav className="mb-8 flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-ink-faint">
+        <Link href="/" className="transition-colors hover:text-ink">Trang chủ</Link>
+        <span aria-hidden>/</span>
+        <Link href="/products" className="transition-colors hover:text-ink">Sản phẩm</Link>
+        <span aria-hidden>/</span>
+        <span className="truncate text-ink">{product.name}</span>
       </nav>
 
       <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
-        <ProductGallery images={product.images} fallbackLabel={product.brand.name} />
+        <div className="animate-fade-in">
+          <ProductGallery images={product.images} fallbackLabel={product.brand.name} />
+        </div>
 
-        <div className="space-y-6">
+        <div className="space-y-6 animate-fade-in-up">
           <div>
             <Link
               href={`/products?brand=${product.brand.slug}`}
-              className="text-xs uppercase tracking-[0.3em] text-ink-muted hover:text-ink"
+              className="inline-flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.3em] text-champagne-dark transition-colors hover:text-ink"
             >
+              <span aria-hidden className="h-px w-6 bg-champagne" />
               {product.brand.name}
             </Link>
-            <h1 className="mt-2 font-display text-4xl sm:text-5xl">{product.name}</h1>
-            <p className="mt-3 text-sm text-ink-muted">
-              {concentrationLabel[product.concentration]} · {genderLabel[product.gender]}
-              {defaultVariant && ` · từ ${defaultVariant.volumeMl}ml`}
-            </p>
+            <h1 className="mt-3 font-display text-4xl font-light leading-tight text-ink sm:text-5xl">
+              {product.name}
+            </h1>
+            <div className="mt-4 flex flex-wrap items-center gap-3 text-xs">
+              <span className="inline-flex items-center gap-1.5 border border-border-soft bg-cream-warm px-3 py-1 text-ink-muted">
+                {concentrationLabel[product.concentration]}
+              </span>
+              <span className="inline-flex items-center gap-1.5 border border-border-soft bg-cream-warm px-3 py-1 text-ink-muted">
+                {genderLabel[product.gender]}
+              </span>
+              {avgRating !== null && (
+                <span className="inline-flex items-center gap-1 text-ink-muted">
+                  <span className="text-champagne">{"★".repeat(Math.round(avgRating))}</span>
+                  <span>({product.reviews.length} đánh giá)</span>
+                </span>
+              )}
+            </div>
           </div>
 
-          <p className="leading-relaxed text-ink-muted">{product.description}</p>
+          <div aria-hidden className="divider-gradient" />
+
+          <p className="text-base leading-relaxed text-ink-muted">{product.description}</p>
 
           {(product.topNotes || product.middleNotes || product.baseNotes) && (
-            <div className="space-y-3 border-y border-[color:var(--color-border-soft)] py-6">
-              <h2 className="text-xs uppercase tracking-widest text-ink-muted">Hương thơm</h2>
-              <dl className="space-y-2 text-sm">
+            <div className="space-y-4 border border-border-soft bg-white p-6 shadow-soft">
+              <div className="flex items-center gap-3">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-5 w-5 text-champagne-dark">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 2C8 6 6 9 6 13a6 6 0 1012 0c0-4-2-7-6-11z" />
+                </svg>
+                <h2 className="text-[11px] font-medium uppercase tracking-[0.25em] text-ink-muted">Tháp hương</h2>
+              </div>
+              <dl className="space-y-3 text-sm">
                 {product.topNotes && (
-                  <div className="flex gap-3">
-                    <dt className="w-24 text-ink-muted">Hương đầu</dt>
-                    <dd>{product.topNotes}</dd>
+                  <div className="flex gap-4">
+                    <dt className="w-24 shrink-0 text-ink-faint">Hương đầu</dt>
+                    <dd className="flex-1 text-ink">{product.topNotes}</dd>
                   </div>
                 )}
                 {product.middleNotes && (
-                  <div className="flex gap-3">
-                    <dt className="w-24 text-ink-muted">Hương giữa</dt>
-                    <dd>{product.middleNotes}</dd>
+                  <div className="flex gap-4">
+                    <dt className="w-24 shrink-0 text-ink-faint">Hương giữa</dt>
+                    <dd className="flex-1 text-ink">{product.middleNotes}</dd>
                   </div>
                 )}
                 {product.baseNotes && (
-                  <div className="flex gap-3">
-                    <dt className="w-24 text-ink-muted">Hương cuối</dt>
-                    <dd>{product.baseNotes}</dd>
+                  <div className="flex gap-4">
+                    <dt className="w-24 shrink-0 text-ink-faint">Hương cuối</dt>
+                    <dd className="flex-1 text-ink">{product.baseNotes}</dd>
                   </div>
                 )}
               </dl>
@@ -159,32 +182,58 @@ export default async function ProductDetailPage({ params }: PageProps) {
             <div className="flex-1">
               <VariantSelector variants={variantOptions} />
             </div>
-            <WishlistButton productId={product.id} initialInWishlist={inWishlist} variant="icon" className="h-12 w-12" />
+            <WishlistButton
+              productId={product.id}
+              initialInWishlist={inWishlist}
+              variant="icon"
+              className="h-12 w-12"
+            />
           </div>
 
-          <dl className="grid grid-cols-2 gap-4 pt-4 text-sm">
+          {/* Trust badges nhỏ */}
+          <ul className="grid grid-cols-2 gap-3 border-t border-border-soft pt-6 text-xs text-ink-muted sm:grid-cols-4">
+            {[
+              { d: "M9 12l2 2 4-4M12 22a10 10 0 100-20 10 10 0 000 20z", label: "Chính hãng" },
+              { d: "M3 7h13l3 4v6h-3a2 2 0 11-4 0H9a2 2 0 11-4 0H3V7z", label: "Giao nhanh" },
+              { d: "M3 6l9 6 9-6M3 6v12h18V6", label: "Đổi trả 7 ngày" },
+              { d: "M12 2l3 7h7l-5.5 4 2 7-6.5-4.5L5.5 20l2-7L2 9h7z", label: "Quà tặng" },
+            ].map((item) => (
+              <li key={item.label} className="flex items-center gap-2">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-4 w-4 text-champagne-dark">
+                  <path strokeLinecap="round" strokeLinejoin="round" d={item.d} />
+                </svg>
+                {item.label}
+              </li>
+            ))}
+          </ul>
+
+          <dl className="grid grid-cols-2 gap-4 pt-2 text-sm">
             <div>
-              <dt className="text-ink-muted">Tổng tồn kho</dt>
-              <dd>{totalStock > 0 ? `${totalStock} sản phẩm` : "Hết hàng"}</dd>
+              <dt className="text-[11px] uppercase tracking-[0.2em] text-ink-faint">Tồn kho</dt>
+              <dd className="mt-1">{totalStock > 0 ? `${totalStock} sản phẩm` : "Hết hàng"}</dd>
             </div>
             <div>
-              <dt className="text-ink-muted">Danh mục</dt>
-              <dd>{product.category.name}</dd>
+              <dt className="text-[11px] uppercase tracking-[0.2em] text-ink-faint">Danh mục</dt>
+              <dd className="mt-1">{product.category.name}</dd>
             </div>
           </dl>
         </div>
       </div>
 
-      <section className="mt-16 border-t border-[color:var(--color-border-soft)] pt-12">
-        <h2 className="font-display text-3xl">Đánh giá từ khách hàng</h2>
-        {avgRating !== null && (
-          <p className="mt-2 text-sm text-ink-muted">
-            Trung bình {avgRating.toFixed(1)} / 5 từ {product.reviews.length} đánh giá
-          </p>
-        )}
+      {/* Reviews */}
+      <section className="mt-20 border-t border-border-soft pt-12">
+        <SectionHeader
+          eyebrow="Trải nghiệm thật"
+          title="Đánh giá từ khách hàng"
+          description={
+            avgRating !== null
+              ? `Trung bình ${avgRating.toFixed(1)} / 5 từ ${product.reviews.length} đánh giá`
+              : undefined
+          }
+        />
 
         {canReview && (
-          <div className="mt-8 max-w-2xl">
+          <div className="mt-10 max-w-2xl border border-border-soft bg-white p-6 shadow-soft">
             <ReviewForm
               productId={product.id}
               initialRating={existingReview?.rating ?? 0}
@@ -195,33 +244,53 @@ export default async function ProductDetailPage({ params }: PageProps) {
         )}
 
         {!canReview && session?.user && (
-          <p className="mt-6 text-sm text-ink-muted">
+          <p className="mt-8 text-sm text-ink-muted">
             Bạn cần mua và nhận sản phẩm trước khi có thể đánh giá.
           </p>
         )}
 
-        {product.reviews.length > 0 && (
-          <ul className="mt-8 space-y-6">
+        {product.reviews.length > 0 ? (
+          <ul className="mt-10 grid gap-6 md:grid-cols-2">
             {product.reviews.map((review) => (
-              <li key={review.id} className="border-b border-[color:var(--color-border-soft)] pb-6">
-                <div className="flex items-center gap-3">
-                  <p className="font-medium">{review.user.name ?? "Khách hàng"}</p>
-                  <p className="text-xs text-champagne">
-                    {"★".repeat(review.rating)}
-                    <span className="text-ink-muted">{"★".repeat(5 - review.rating)}</span>
+              <li
+                key={review.id}
+                className="border border-border-soft bg-white p-6 shadow-soft transition-shadow duration-300 hover:shadow-luxe"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium text-ink">{review.user.name ?? "Khách hàng"}</p>
+                    <p className="mt-1 text-[11px] uppercase tracking-[0.2em] text-ink-faint">
+                      Đánh giá đã xác minh
+                    </p>
+                  </div>
+                  <p className="text-sm">
+                    <span className="text-champagne">{"★".repeat(review.rating)}</span>
+                    <span className="text-ink-faint">{"★".repeat(5 - review.rating)}</span>
                   </p>
                 </div>
-                {review.comment && <p className="mt-2 text-sm text-ink-muted">{review.comment}</p>}
+                {review.comment && (
+                  <p className="mt-4 text-sm leading-relaxed text-ink-muted">{review.comment}</p>
+                )}
               </li>
             ))}
           </ul>
+        ) : (
+          !canReview && (
+            <p className="mt-8 text-sm italic text-ink-muted">
+              Chưa có đánh giá nào. Hãy là người đầu tiên chia sẻ trải nghiệm!
+            </p>
+          )
         )}
       </section>
 
       {related.length > 0 && (
-        <section className="mt-16 border-t border-[color:var(--color-border-soft)] pt-12">
-          <h2 className="font-display text-3xl">Có thể bạn cũng thích</h2>
-          <div className="mt-8 grid grid-cols-2 gap-6 sm:gap-8 md:grid-cols-3 lg:grid-cols-4">
+        <section className="mt-20 border-t border-border-soft pt-12">
+          <SectionHeader
+            eyebrow="Gợi ý"
+            title="Có thể bạn cũng thích"
+            link={{ href: "/products", label: "Xem thêm" }}
+          />
+          <div className="mt-12 grid grid-cols-2 gap-6 sm:gap-8 md:grid-cols-3 lg:grid-cols-4">
             {related.map((item) => (
               <ProductCard key={item.id} product={item} />
             ))}
