@@ -5,17 +5,12 @@ import { UserMenu } from "@/components/store/user-menu";
 import { HeaderSearch } from "@/components/store/header-search";
 import { TopBar } from "@/components/store/top-bar";
 
-// Logo hình hoa tinh giản — bound tile vàng champagne trên ink, có viền sáng nhẹ
+// Logo monogram — chữ "W" lồng trong khung rose-gold mảnh, modern hơn cánh hoa
 function LogoMark() {
   return (
-    <div className="relative flex h-11 w-11 items-center justify-center bg-linear-to-br from-ink to-ink-soft text-champagne ring-1 ring-champagne/30 shadow-soft">
-      <svg viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">
-        <circle cx="12" cy="6" r="3" />
-        <circle cx="18" cy="12" r="3" />
-        <circle cx="12" cy="18" r="3" />
-        <circle cx="6" cy="12" r="3" />
-        <circle cx="12" cy="12" r="2.2" fill="#faf7f2" />
-      </svg>
+    <div className="relative flex h-10 w-10 items-center justify-center rounded-sm bg-ink text-champagne ring-1 ring-champagne/40 shadow-soft">
+      <span className="font-display text-xl leading-none italic">W</span>
+      <span aria-hidden className="absolute -inset-px rounded-sm border border-champagne/15" />
     </div>
   );
 }
@@ -37,36 +32,34 @@ function HeaderIconLink({
     <Link
       href={href}
       aria-label={label}
-      className={`group relative flex flex-col items-center gap-1 text-ink-muted transition-colors duration-300 ease-luxe hover:text-ink ${className}`}
+      className={`group relative flex flex-col items-center gap-0.5 text-ink-muted transition-colors duration-300 ease-luxe hover:text-ink ${className}`}
     >
       <span className="relative">
         {icon}
         {badge !== undefined && badge > 0 && (
-          <span className="absolute -right-2 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-burgundy px-1 text-[10px] font-medium text-white shadow-soft">
+          <span className="absolute -right-1.5 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-burgundy px-1 text-[10px] font-medium text-white shadow-soft">
             {badge > 99 ? "99+" : badge}
           </span>
         )}
       </span>
-      <span className="text-[11px] tracking-wider">{label}</span>
+      <span className="text-[10px] tracking-wide">{label}</span>
     </Link>
   );
 }
 
 const navLinks: Array<{ href: string; label: string; accent?: boolean }> = [
-  { href: "/products", label: "TƯ VẤN CHỌN" },
-  { href: "/products?onSale=true&sort=price-asc", label: "HOT DEALS", accent: true },
-  { href: "/brands", label: "THƯƠNG HIỆU" },
-  { href: "/products?gender=MALE", label: "NƯỚC HOA NAM" },
-  { href: "/products?gender=FEMALE", label: "NƯỚC HOA NỮ" },
-  { href: "/products?gender=UNISEX", label: "NƯỚC HOA UNISEX" },
-  { href: "/products", label: "SET QUÀ TẶNG" },
-  { href: "/products", label: "PHỤ KIỆN" },
+  { href: "/products?gender=MALE", label: "Nam" },
+  { href: "/products?gender=FEMALE", label: "Nữ" },
+  { href: "/products?gender=UNISEX", label: "Unisex" },
+  { href: "/gift-sets", label: "Set quà tặng" },
+  { href: "/accessories", label: "Phụ kiện" },
+  { href: "/brands", label: "Thương hiệu" },
+  { href: "/sale", label: "Sale", accent: true },
 ];
 
 export async function Header() {
   const session = await auth();
 
-  // Lấy số lượng giỏ + yêu thích song song khi đã đăng nhập
   const [cartCount, wishlistCount] = session?.user
     ? await Promise.all([
         prisma.cartItem.count({ where: { userId: session.user.id } }),
@@ -79,63 +72,32 @@ export async function Header() {
       <TopBar />
 
       {/* Row 1 — brand / search / icon buttons */}
-      <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-4 sm:gap-6 sm:px-6 lg:gap-10 lg:px-8">
-        {/* Brand */}
-        <Link href="/" className="group flex min-w-0 items-center gap-3 shrink">
-          <div className="hidden flex-col sm:flex">
-            <span className="text-[10px] uppercase tracking-[0.3em] text-ink-faint">
-              Chào mừng đến với
+      <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:gap-6 sm:px-6 lg:gap-10 lg:px-8">
+        <Link href="/" className="group flex min-w-0 items-center gap-2.5 shrink">
+          <LogoMark />
+          <div className="hidden min-w-0 flex-col leading-none sm:flex">
+            <span className="font-display text-xl tracking-tight transition-colors duration-300 group-hover:text-champagne-dark">
+              Whisper of Scent
             </span>
-            <div className="mt-1 flex items-center gap-3">
-              <LogoMark />
-              <span className="font-display text-2xl leading-none tracking-tight transition-colors duration-300 group-hover:text-champagne-dark">
-                Whisper of Scent
-              </span>
-            </div>
+            <span className="mt-1 text-[9px] uppercase tracking-[0.25em] text-ink-faint">
+              Maison de Parfum
+            </span>
           </div>
-          <div className="flex min-w-0 items-center gap-2 sm:hidden">
-            <LogoMark />
-            <span className="truncate font-display text-base leading-none">Whisper of Scent</span>
-          </div>
+          <span className="truncate font-display text-base leading-none sm:hidden">Whisper of Scent</span>
         </Link>
 
-        {/* Search */}
         <div className="hidden flex-1 md:block">
           <HeaderSearch />
         </div>
 
-        {/* Icon buttons */}
-        <div className="ml-auto flex items-center gap-3 sm:gap-5 md:gap-7">
-          <HeaderIconLink
-            href="/products"
-            label="Cửa hàng"
-            className="hidden sm:flex"
-            icon={
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-6 w-6">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 21s-7-7-7-12a7 7 0 1114 0c0 5-7 12-7 12z" />
-                <circle cx="12" cy="9" r="2.5" />
-              </svg>
-            }
-          />
-          <HeaderIconLink
-            href="/faq"
-            label="Hỗ trợ"
-            className="hidden sm:flex"
-            icon={
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-6 w-6">
-                <circle cx="12" cy="12" r="9" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9.5 9a2.5 2.5 0 115 0c0 1.5-2.5 2-2.5 3.5" />
-                <circle cx="12" cy="17" r="0.5" fill="currentColor" />
-              </svg>
-            }
-          />
+        <div className="ml-auto flex items-center gap-3 sm:gap-5 md:gap-6">
           <UserMenu user={session?.user ?? null} />
           <HeaderIconLink
             href={session?.user ? "/account/wishlist" : "/login?callbackUrl=/account/wishlist"}
             label="Yêu thích"
             badge={wishlistCount}
             icon={
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-6 w-6">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-5 w-5">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -149,7 +111,7 @@ export async function Header() {
             label="Giỏ hàng"
             badge={cartCount}
             icon={
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-6 w-6">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-5 w-5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l2.4 12.3a2 2 0 002 1.7h8.2a2 2 0 002-1.6L22 7H6" />
                 <circle cx="9" cy="20" r="1.5" />
                 <circle cx="17" cy="20" r="1.5" />
@@ -161,7 +123,7 @@ export async function Header() {
 
       {/* Row 2 — primary nav */}
       <nav className="border-t border-border-faint">
-        <ul className="mx-auto flex max-w-7xl items-center gap-6 overflow-x-auto px-4 py-3 text-xs font-medium uppercase tracking-[0.18em] sm:gap-8 sm:px-6 lg:justify-center lg:gap-12 lg:px-8">
+        <ul className="mx-auto flex max-w-7xl items-center gap-5 overflow-x-auto px-4 py-2.5 text-[12px] font-medium tracking-[0.08em] sm:gap-7 sm:px-6 lg:justify-center lg:gap-10 lg:px-8">
           {navLinks.map((link) => (
             <li key={link.label} className="shrink-0">
               <Link
@@ -169,12 +131,11 @@ export async function Header() {
                 className={`group relative inline-block py-1 transition-colors duration-300 ease-luxe ${
                   link.accent
                     ? "text-burgundy hover:text-burgundy-light"
-                    : "text-ink-muted hover:text-ink"
+                    : "text-ink-soft hover:text-ink"
                 }`}
               >
                 <span className="relative">
                   {link.label}
-                  {/* Gạch chân sang trọng: bung ra từ giữa */}
                   <span
                     aria-hidden="true"
                     className={`pointer-events-none absolute -bottom-1 left-1/2 h-px w-0 -translate-x-1/2 transition-all duration-500 ease-luxe group-hover:w-full ${
@@ -188,8 +149,8 @@ export async function Header() {
         </ul>
       </nav>
 
-      {/* Search bar (mobile, below nav) */}
-      <div className="border-t border-border-faint px-4 py-3 md:hidden">
+      {/* Search bar mobile */}
+      <div className="border-t border-border-faint px-4 py-2.5 md:hidden">
         <HeaderSearch />
       </div>
     </header>

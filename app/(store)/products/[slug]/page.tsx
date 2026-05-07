@@ -10,6 +10,8 @@ import { WishlistButton } from "@/components/store/wishlist-button";
 import { ReviewForm } from "@/components/store/review-form";
 import { hasUserPurchased, getUserReview } from "@/lib/queries/reviews";
 import { SectionHeader } from "@/components/ui/section-header";
+import { NotesPyramid } from "@/components/store/notes-pyramid";
+import { StickyAddBar } from "@/components/store/sticky-add-bar";
 
 type PageProps = { params: Promise<{ slug: string }> };
 
@@ -99,10 +101,13 @@ export default async function ProductDetailPage({ params }: PageProps) {
       ? product.reviews.reduce((sum, r) => sum + r.rating, 0) / product.reviews.length
       : null;
 
+  const headerImage = product.images[0]?.url ?? null;
+  const headerPrice = defaultVariant ? Number(defaultVariant.price) : Number(product.minPrice);
+
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-7xl px-4 py-8 pb-24 sm:px-6 lg:px-8 lg:pb-12">
       {/* Breadcrumb */}
-      <nav className="mb-8 flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-ink-faint">
+      <nav className="mb-6 flex items-center gap-2 text-[11px] uppercase tracking-[0.15em] text-ink-faint">
         <Link href="/" className="transition-colors hover:text-ink">Trang chủ</Link>
         <span aria-hidden>/</span>
         <Link href="/products" className="transition-colors hover:text-ink">Sản phẩm</Link>
@@ -110,34 +115,30 @@ export default async function ProductDetailPage({ params }: PageProps) {
         <span className="truncate text-ink">{product.name}</span>
       </nav>
 
-      <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
+      <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
         <div className="animate-fade-in">
           <ProductGallery images={product.images} fallbackLabel={product.brand.name} />
         </div>
 
-        <div className="space-y-6 animate-fade-in-up">
+        <div className="space-y-5 animate-fade-in-up">
           <div>
             <Link
               href={`/products?brand=${product.brand.slug}`}
-              className="inline-flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.3em] text-champagne-dark transition-colors hover:text-ink"
+              className="inline-flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.18em] text-champagne-dark transition-colors hover:text-ink"
             >
-              <span aria-hidden className="h-px w-6 bg-champagne" />
+              <span aria-hidden className="h-px w-5 bg-champagne" />
               {product.brand.name}
             </Link>
-            <h1 className="mt-3 font-display text-4xl font-light leading-tight text-ink sm:text-5xl">
+            <h1 className="mt-2 font-display text-3xl font-light leading-tight text-ink sm:text-4xl lg:text-5xl">
               {product.name}
             </h1>
-            <div className="mt-4 flex flex-wrap items-center gap-3 text-xs">
-              <span className="inline-flex items-center gap-1.5 border border-border-soft bg-cream-warm px-3 py-1 text-ink-muted">
-                {concentrationLabel[product.concentration]}
-              </span>
-              <span className="inline-flex items-center gap-1.5 border border-border-soft bg-cream-warm px-3 py-1 text-ink-muted">
-                {genderLabel[product.gender]}
-              </span>
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+              <span className="chip">{concentrationLabel[product.concentration]}</span>
+              <span className="chip">{genderLabel[product.gender]}</span>
               {avgRating !== null && (
                 <span className="inline-flex items-center gap-1 text-ink-muted">
                   <span className="text-champagne">{"★".repeat(Math.round(avgRating))}</span>
-                  <span>({product.reviews.length} đánh giá)</span>
+                  <span className="text-[11px]">({product.reviews.length} đánh giá)</span>
                 </span>
               )}
             </div>
@@ -145,38 +146,13 @@ export default async function ProductDetailPage({ params }: PageProps) {
 
           <div aria-hidden className="divider-gradient" />
 
-          <p className="text-base leading-relaxed text-ink-muted">{product.description}</p>
+          <p className="text-sm leading-relaxed text-ink-muted sm:text-base">{product.description}</p>
 
-          {(product.topNotes || product.middleNotes || product.baseNotes) && (
-            <div className="space-y-4 border border-border-soft bg-white p-6 shadow-soft">
-              <div className="flex items-center gap-3">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-5 w-5 text-champagne-dark">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 2C8 6 6 9 6 13a6 6 0 1012 0c0-4-2-7-6-11z" />
-                </svg>
-                <h2 className="text-[11px] font-medium uppercase tracking-[0.25em] text-ink-muted">Tháp hương</h2>
-              </div>
-              <dl className="space-y-3 text-sm">
-                {product.topNotes && (
-                  <div className="flex gap-4">
-                    <dt className="w-24 shrink-0 text-ink-faint">Hương đầu</dt>
-                    <dd className="flex-1 text-ink">{product.topNotes}</dd>
-                  </div>
-                )}
-                {product.middleNotes && (
-                  <div className="flex gap-4">
-                    <dt className="w-24 shrink-0 text-ink-faint">Hương giữa</dt>
-                    <dd className="flex-1 text-ink">{product.middleNotes}</dd>
-                  </div>
-                )}
-                {product.baseNotes && (
-                  <div className="flex gap-4">
-                    <dt className="w-24 shrink-0 text-ink-faint">Hương cuối</dt>
-                    <dd className="flex-1 text-ink">{product.baseNotes}</dd>
-                  </div>
-                )}
-              </dl>
-            </div>
-          )}
+          <NotesPyramid
+            topNotes={product.topNotes}
+            middleNotes={product.middleNotes}
+            baseNotes={product.baseNotes}
+          />
 
           <div className="flex items-start gap-3">
             <div className="flex-1">
@@ -190,8 +166,8 @@ export default async function ProductDetailPage({ params }: PageProps) {
             />
           </div>
 
-          {/* Trust badges nhỏ */}
-          <ul className="grid grid-cols-2 gap-3 border-t border-border-soft pt-6 text-xs text-ink-muted sm:grid-cols-4">
+          {/* Trust badges */}
+          <ul className="grid grid-cols-2 gap-2.5 border-t border-border-soft pt-5 text-[11px] text-ink-muted sm:grid-cols-4">
             {[
               { d: "M9 12l2 2 4-4M12 22a10 10 0 100-20 10 10 0 000 20z", label: "Chính hãng" },
               { d: "M3 7h13l3 4v6h-3a2 2 0 11-4 0H9a2 2 0 11-4 0H3V7z", label: "Giao nhanh" },
@@ -207,18 +183,25 @@ export default async function ProductDetailPage({ params }: PageProps) {
             ))}
           </ul>
 
-          <dl className="grid grid-cols-2 gap-4 pt-2 text-sm">
+          <dl className="grid grid-cols-2 gap-3 pt-1 text-sm">
             <div>
-              <dt className="text-[11px] uppercase tracking-[0.2em] text-ink-faint">Tồn kho</dt>
-              <dd className="mt-1">{totalStock > 0 ? `${totalStock} sản phẩm` : "Hết hàng"}</dd>
+              <dt className="text-[10px] uppercase tracking-[0.15em] text-ink-faint">Tồn kho</dt>
+              <dd className="mt-0.5 font-grotesk">{totalStock > 0 ? `${totalStock} sản phẩm` : "Hết hàng"}</dd>
             </div>
             <div>
-              <dt className="text-[11px] uppercase tracking-[0.2em] text-ink-faint">Danh mục</dt>
-              <dd className="mt-1">{product.category.name}</dd>
+              <dt className="text-[10px] uppercase tracking-[0.15em] text-ink-faint">Danh mục</dt>
+              <dd className="mt-0.5 font-grotesk">{product.category.name}</dd>
             </div>
           </dl>
         </div>
       </div>
+
+      <StickyAddBar
+        name={product.name}
+        brandName={product.brand.name}
+        imageUrl={headerImage}
+        price={headerPrice}
+      />
 
       {/* Reviews */}
       <section className="mt-20 border-t border-border-soft pt-12">

@@ -156,6 +156,61 @@ export async function getRelatedProducts(params: {
   return [...sameBrand, ...fillers];
 }
 
+// Top sản phẩm theo số lượng đã bán (sum quantity từ OrderItem) — Best-seller homepage
+export const getBestSellers = unstable_cache(
+  async (limit = 6) => {
+    // Aggregate quantity bán ra từng productId, sort desc, lấy top N
+    const top = await prisma.orderItem.groupBy({
+      by: ["productId"],
+      _sum: { quantity: true },
+      orderBy: { _sum: { quantity: "desc" } },
+      take: limit,
+    });
+    if (top.length === 0) {
+      // Fallback: chưa có order, lấy featured để section không trống
+      return prisma.product.findMany({
+        where: { isActive: true, isFeatured: true },
+        take: limit,
+        orderBy: { createdAt: "desc" },
+        select: productCardSelect,
+      });
+    }
+    const ids = top.map((t) => t.productId);
+    const products = await prisma.product.findMany({
+      where: { id: { in: ids }, isActive: true },
+      select: productCardSelect,
+    });
+    // Giữ thứ tự theo aggregate sold
+    const byId = new Map(products.map((p) => [p.id, p]));
+    return ids.map((id) => byId.get(id)).filter((p): p is NonNullable<typeof p> => Boolean(p));
+  },
+  ["best-sellers"],
+  { tags: ["products"], revalidate: 3600 }
+);
+
+// Sản phẩm đang sale — homepage section + trang /sale
+export const getOnSaleProducts = unstable_cache(
+  async (limit = 8) =>
+    prisma.product.findMany({
+      where: { isActive: true, hasDiscount: true },
+      take: limit,
+      orderBy: { createdAt: "desc" },
+      select: productCardSelect,
+    }),
+  ["on-sale-products"],
+  { tags: ["products"], revalidate: 3600 }
+);
+
+// Lấy products theo category slug — dùng cho /gift-sets, /accessories
+export async function getProductsByCategory(slug: string, limit = 24) {
+  return prisma.product.findMany({
+    where: { isActive: true, category: { slug } },
+    take: limit,
+    orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],
+    select: productCardSelect,
+  });
+}
+
 export const getBrandsAndCategories = unstable_cache(
   async () => {
     const [brands, categories] = await prisma.$transaction([

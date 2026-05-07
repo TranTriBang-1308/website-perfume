@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Cormorant_Garamond } from "next/font/google";
+import { Inter, Inter_Tight, Cormorant_Garamond } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { Providers } from "@/components/providers";
 import { siteConfig, getSiteUrl } from "@/lib/site-config";
@@ -8,6 +8,13 @@ import "./globals.css";
 const inter = Inter({
   variable: "--font-sans",
   subsets: ["latin", "vietnamese"],
+});
+
+// Inter Tight — modern grotesk, dùng cho H3+ và label tinh tế
+const interTight = Inter_Tight({
+  variable: "--font-grotesk",
+  subsets: ["latin", "vietnamese"],
+  weight: ["400", "500", "600", "700"],
 });
 
 const cormorant = Cormorant_Garamond({
@@ -19,7 +26,7 @@ const cormorant = Cormorant_Garamond({
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#1a0a00",
+  themeColor: "#0f0f10",
 };
 
 export const metadata: Metadata = {
@@ -55,7 +62,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="vi" className={`${inter.variable} ${cormorant.variable} h-full`}>
+    <html lang="vi" className={`${inter.variable} ${interTight.variable} ${cormorant.variable} h-full`}>
       <body className="min-h-full flex flex-col">
         <Providers>{children}</Providers>
         <Analytics />

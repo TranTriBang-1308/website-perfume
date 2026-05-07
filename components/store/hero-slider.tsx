@@ -52,7 +52,7 @@ export function HeroSlider({ banners }: Props) {
           return (
             <div
               key={b.id}
-              className={`absolute inset-0 transition-opacity duration-[1200ms] ease-out ${
+              className={`absolute inset-0 transition-opacity duration-1200 ease-out ${
                 active ? "opacity-100" : "pointer-events-none opacity-0"
               }`}
               aria-hidden={!active}
@@ -76,18 +76,19 @@ export function HeroSlider({ banners }: Props) {
               </div>
 
               {/* Overlay gradient: ink đậm trái → trong suốt phải, champagne glow mỏng trên */}
-              <div className="absolute inset-0 bg-gradient-to-r from-ink/80 via-ink/40 to-ink/10" />
-              <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-ink/40 to-transparent" />
+              <div className="absolute inset-0 bg-linear-to-r from-ink/80 via-ink/40 to-ink/10" />
+              <div className="absolute inset-x-0 top-0 h-24 bg-linear-to-b from-ink/40 to-transparent" />
 
               {/* Nội dung: trượt-lên-fade khi active */}
               <div className="relative z-10 mx-auto flex h-full w-full max-w-7xl items-center px-4 sm:px-6 lg:px-8">
                 <div
-                  className={`w-full max-w-xl space-y-6 text-cream transition-all duration-[900ms] ease-out ${
+                  className={`w-full max-w-xl space-y-5 text-cream transition-all duration-900 ease-out ${
                     active ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
                   }`}
                 >
                   {b.subtitle && (
-                    <p className="wrap-break-word text-xs uppercase tracking-[0.35em] text-champagne">
+                    <p className="inline-flex items-center gap-2.5 rounded-full border border-champagne/40 bg-champagne/15 px-3 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-champagne wrap-break-word">
+                      <span aria-hidden className="inline-block h-1.5 w-1.5 rounded-full bg-champagne animate-pulse-soft" />
                       {b.subtitle}
                     </p>
                   )}
@@ -98,10 +99,10 @@ export function HeroSlider({ banners }: Props) {
                     <p className="max-w-md wrap-break-word text-base text-cream/80">{b.description}</p>
                   )}
                   {b.ctaLabel && b.ctaHref && (
-                    <div className="pt-2">
+                    <div className="pt-1">
                       <Link
                         href={b.ctaHref}
-                        className="group inline-flex h-12 items-center gap-3 bg-champagne px-8 text-sm font-medium tracking-wide text-ink transition-colors hover:bg-cream"
+                        className="group inline-flex h-12 items-center gap-3 rounded-sm bg-champagne px-7 text-sm font-medium tracking-wide text-ink transition-colors hover:bg-champagne-light"
                       >
                         <span>{b.ctaLabel}</span>
                         <span aria-hidden="true" className="transition-transform group-hover:translate-x-1">

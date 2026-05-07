@@ -49,10 +49,10 @@ export function CartLine({ item }: Props) {
   };
 
   return (
-    <div className="group relative flex gap-4 border border-border-soft bg-white p-4 shadow-soft transition-all duration-300 ease-luxe hover:border-champagne hover:shadow-luxe sm:gap-6 sm:p-5">
+    <div className="group relative flex gap-4 rounded-sm border border-border-soft bg-paper p-4 shadow-soft transition-all duration-300 ease-luxe hover:border-champagne hover:shadow-luxe sm:gap-5 sm:p-5">
       <Link
         href={`/products/${product.slug}`}
-        className="relative h-32 w-24 shrink-0 overflow-hidden border border-border-soft bg-white sm:h-36 sm:w-28"
+        className="relative h-28 w-22 shrink-0 overflow-hidden rounded-sm border border-border-soft bg-paper sm:h-32 sm:w-24"
       >
         {image ? (
           <Image
@@ -69,37 +69,37 @@ export function CartLine({ item }: Props) {
         )}
       </Link>
 
-      <div className="flex flex-1 flex-col justify-between gap-3">
+      <div className="flex flex-1 flex-col justify-between gap-2.5">
         <div className="flex items-start justify-between gap-4">
-          <div className="space-y-1">
-            <p className="text-[10px] uppercase tracking-[0.25em] text-ink-faint">
+          <div className="space-y-0.5">
+            <p className="text-[10px] uppercase tracking-[0.15em] text-ink-faint">
               {product.brand.name}
             </p>
             <Link
               href={`/products/${product.slug}`}
-              className="block font-display text-lg leading-tight text-ink transition-colors hover:text-champagne-dark"
+              className="block font-grotesk text-base font-medium leading-tight text-ink transition-colors hover:text-champagne-dark"
             >
               {product.name}
             </Link>
-            <p className="text-xs text-ink-muted">
+            <p className="text-[11px] text-ink-muted">
               {product.concentration} · {variant.volumeMl}ml
             </p>
-            <p className="text-xs text-ink-faint">
+            <p className="text-[11px] text-ink-faint">
               Đơn giá: {formatVND(price)}
             </p>
           </div>
-          <p className="whitespace-nowrap font-display text-lg text-ink">
+          <p className="whitespace-nowrap font-grotesk text-base font-semibold text-ink">
             {formatVND(price * item.quantity)}
           </p>
         </div>
 
         <div className="flex items-center justify-between">
-          <div className="inline-flex items-center border border-border-soft bg-cream-warm/40">
+          <div className="inline-flex items-center rounded-sm border border-border-soft bg-cream-warm/40">
             <button
               type="button"
               onClick={() => updateQty(item.quantity - 1)}
               disabled={pending}
-              className="h-9 w-9 text-ink-muted transition-colors hover:bg-ink hover:text-white disabled:opacity-50"
+              className="h-9 w-9 text-ink-muted transition-colors hover:bg-ink hover:text-cream disabled:opacity-50"
               aria-label="Giảm số lượng"
             >
               −
@@ -109,7 +109,7 @@ export function CartLine({ item }: Props) {
               type="button"
               onClick={() => updateQty(item.quantity + 1)}
               disabled={pending}
-              className="h-9 w-9 text-ink-muted transition-colors hover:bg-ink hover:text-white disabled:opacity-50"
+              className="h-9 w-9 text-ink-muted transition-colors hover:bg-ink hover:text-cream disabled:opacity-50"
               aria-label="Tăng số lượng"
             >
               +
@@ -119,7 +119,7 @@ export function CartLine({ item }: Props) {
             type="button"
             onClick={removeItem}
             disabled={pending}
-            className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.2em] text-ink-faint transition-colors hover:text-burgundy"
+            className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.15em] text-ink-faint transition-colors hover:text-burgundy"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-3.5 w-3.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />

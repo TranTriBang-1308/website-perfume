@@ -3,7 +3,7 @@ import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 
 export const metadata = {
-  title: "Thương hiệu — Parfum",
+  title: "Thương hiệu — Whisper of Scent",
   description: "Khám phá toàn bộ các thương hiệu nước hoa danh tiếng tại cửa hàng.",
 };
 
@@ -23,17 +23,18 @@ export default async function BrandsPage() {
   const sortedKeys = Array.from(groups.keys()).sort();
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-      <header className="border-b border-[color:var(--color-border-soft)] pb-10 text-center">
-        <p className="text-xs uppercase tracking-[0.3em] text-ink-muted">
+    <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+      <header className="border-b border-border-soft pb-8 text-center">
+        <p className="inline-flex items-center gap-3 text-[11px] font-medium uppercase tracking-[0.18em] text-champagne-dark">
+          <span aria-hidden className="h-px w-8 bg-champagne" />
           Bộ sưu tập thương hiệu
+          <span aria-hidden className="h-px w-8 bg-champagne" />
         </p>
-        <h1 className="mt-3 font-display text-4xl sm:text-5xl lg:text-6xl">
+        <h1 className="mt-3 font-display text-4xl font-light leading-tight sm:text-5xl lg:text-6xl">
           Thương hiệu nước hoa
         </h1>
-        <p className="mx-auto mt-4 max-w-xl text-sm text-ink-muted">
-          {brands.length} thương hiệu được chọn lọc, từ những nhà mốt cao cấp đến các
-          niche house độc đáo.
+        <p className="mx-auto mt-3 max-w-xl text-sm text-ink-muted">
+          {brands.length} thương hiệu được chọn lọc — từ những nhà mốt cao cấp Pháp đến niche house phương Đông.
         </p>
       </header>
 
@@ -49,56 +50,56 @@ export default async function BrandsPage() {
           {/* Bảng chữ cái nhảy nhanh */}
           <nav
             aria-label="Lọc theo chữ cái"
-            className="mt-10 flex flex-wrap items-center justify-center gap-2"
+            className="mt-8 flex flex-wrap items-center justify-center gap-1.5"
           >
             {sortedKeys.map((key) => (
               <a
                 key={key}
                 href={`#letter-${key}`}
-                className="inline-flex h-9 w-9 items-center justify-center border border-[color:var(--color-border-soft)] bg-white text-sm font-medium text-ink-muted transition-colors hover:border-ink hover:text-ink"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-xs border border-border-soft bg-paper text-xs font-medium text-ink-muted transition-all hover:border-champagne hover:text-champagne-dark"
               >
                 {key}
               </a>
             ))}
           </nav>
 
-          <div className="mt-14 space-y-16">
+          <div className="mt-12 space-y-12">
             {sortedKeys.map((key) => {
               const items = groups.get(key)!;
               return (
                 <section key={key} id={`letter-${key}`} className="scroll-mt-28">
-                  <div className="flex items-baseline gap-6 border-b border-[color:var(--color-border-soft)] pb-4">
-                    <h2 className="font-display text-5xl text-champagne">{key}</h2>
-                    <p className="text-xs uppercase tracking-[0.25em] text-ink-muted">
+                  <div className="flex items-baseline gap-5 border-b border-border-soft pb-3">
+                    <h2 className="font-display text-4xl text-champagne">{key}</h2>
+                    <p className="text-[11px] uppercase tracking-[0.2em] text-ink-faint">
                       {items.length} thương hiệu
                     </p>
                   </div>
 
-                  <div className="mt-8 grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4">
+                  <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5">
                     {items.map((b) => (
                       <Link
                         key={b.id}
                         href={`/products?brand=${b.slug}`}
-                        className="group flex flex-col overflow-hidden border border-[color:var(--color-border-soft)] bg-white transition-colors hover:border-ink"
+                        className="group flex flex-col overflow-hidden rounded-sm border border-border-soft bg-paper transition-all duration-500 ease-luxe hover:-translate-y-0.5 hover:border-champagne hover:shadow-luxe"
                       >
-                        <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden bg-white">
+                        <div className="relative flex aspect-5/3 items-center justify-center overflow-hidden bg-cream-warm/40">
                           {b.logo ? (
                             <Image
                               src={b.logo}
                               alt={b.name}
                               fill
-                              sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
-                              className="object-contain p-4 transition-transform duration-500 group-hover:scale-105 sm:p-6"
+                              sizes="(min-width: 1024px) 18vw, (min-width: 640px) 30vw, 45vw"
+                              className="object-contain p-3 transition-transform duration-500 group-hover:scale-[1.04] sm:p-4"
                             />
                           ) : (
-                            <span className="font-display text-3xl text-ink transition-colors group-hover:text-champagne">
+                            <span className="font-display text-2xl text-ink transition-colors group-hover:text-champagne-dark">
                               {b.name}
                             </span>
                           )}
                         </div>
-                        <div className="border-t border-[color:var(--color-border-soft)] px-4 py-3">
-                          <p className="font-display text-lg leading-tight">{b.name}</p>
-                          <p className="mt-1 text-xs uppercase tracking-widest text-ink-muted">
+                        <div className="border-t border-border-soft px-3 py-2.5">
+                          <p className="font-grotesk text-sm font-medium leading-tight">{b.name}</p>
+                          <p className="mt-0.5 text-[10px] uppercase tracking-[0.15em] text-ink-faint">
                             {b._count.products} sản phẩm
                           </p>
                         </div>

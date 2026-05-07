@@ -17,7 +17,7 @@ export function ProductGallery({ images, fallbackLabel }: Props) {
 
   if (images.length === 0) {
     return (
-      <div className="flex aspect-4/5 items-center justify-center border border-border-soft bg-linear-to-br from-champagne/15 to-burgundy/5 font-display text-3xl text-ink-muted shadow-soft">
+      <div className="flex aspect-3/4 items-center justify-center rounded-sm border border-border-soft bg-linear-to-br from-champagne/15 to-burgundy/5 font-display text-3xl text-ink-muted shadow-soft">
         {fallbackLabel}
       </div>
     );
@@ -33,9 +33,9 @@ export function ProductGallery({ images, fallbackLabel }: Props) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <div
-        className="group relative aspect-4/5 overflow-hidden border border-border-soft bg-white shadow-luxe"
+        className="group relative aspect-3/4 overflow-hidden rounded-sm border border-border-soft bg-paper shadow-luxe"
         onMouseMove={onMouseMove}
         onMouseLeave={() => setZoomPos(null)}
       >
@@ -57,7 +57,7 @@ export function ProductGallery({ images, fallbackLabel }: Props) {
         />
 
         {/* Zoom hint */}
-        <span className="pointer-events-none absolute right-3 top-3 inline-flex items-center gap-1.5 bg-white/85 px-2.5 py-1 text-[10px] uppercase tracking-[0.2em] text-ink-muted opacity-0 backdrop-blur transition-opacity duration-300 group-hover:opacity-100">
+        <span className="pointer-events-none absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-paper/90 px-2.5 py-1 text-[10px] uppercase tracking-[0.15em] text-ink-muted opacity-0 backdrop-blur transition-opacity duration-300 group-hover:opacity-100">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-3 w-3">
             <circle cx="11" cy="11" r="7" />
             <path strokeLinecap="round" d="M21 21l-4.5-4.5M11 8v6M8 11h6" />
@@ -67,14 +67,14 @@ export function ProductGallery({ images, fallbackLabel }: Props) {
       </div>
 
       {images.length > 1 && (
-        <div className="grid grid-cols-5 gap-3">
+        <div className="grid grid-cols-5 gap-2 sm:gap-3">
           {images.map((img, idx) => (
             <button
               key={img.id}
               onClick={() => setActive(idx)}
               aria-label={`Xem ảnh ${idx + 1}`}
               className={cn(
-                "relative aspect-square overflow-hidden border transition-all duration-300 ease-luxe",
+                "relative aspect-square overflow-hidden rounded-sm border transition-all duration-300 ease-luxe",
                 idx === active
                   ? "border-champagne shadow-soft ring-1 ring-champagne/40"
                   : "border-border-soft opacity-70 hover:border-ink-faint hover:opacity-100"

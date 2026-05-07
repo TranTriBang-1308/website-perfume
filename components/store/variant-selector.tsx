@@ -23,7 +23,6 @@ export function VariantSelector({ variants }: Props) {
   const [selectedId, setSelectedId] = useState(initial?.id ?? "");
 
   if (!initial) {
-    // Data lỗi: sản phẩm hiển thị nhưng chưa có variant nào — admin cần bổ sung
     return (
       <p className="text-sm text-burgundy">
         Sản phẩm chưa có dung tích để bán. Vui lòng quay lại sau.
@@ -32,7 +31,6 @@ export function VariantSelector({ variants }: Props) {
   }
 
   const selected = variants.find((v) => v.id === selectedId) ?? initial;
-
   const hasDiscount = selected.compareAtPrice !== null && selected.compareAtPrice > selected.price;
   const outOfStock = selected.stock <= 0;
   const discountPercent = hasDiscount
@@ -40,16 +38,16 @@ export function VariantSelector({ variants }: Props) {
     : 0;
 
   return (
-    <div className="space-y-6">
+    <div id="buy-section" className="space-y-5 scroll-mt-24">
       {/* Giá theo variant đang chọn */}
-      <div className="flex items-baseline gap-3 border-y border-[color:var(--color-border-soft)] py-4">
-        <span className="font-display text-3xl">{formatVND(selected.price)}</span>
+      <div className="flex flex-wrap items-baseline gap-3 border-y border-border-soft py-4">
+        <span className="font-grotesk text-3xl font-semibold tracking-tight">{formatVND(selected.price)}</span>
         {hasDiscount && (
           <>
-            <span className="text-lg text-ink-muted line-through">
+            <span className="text-base text-ink-faint line-through">
               {formatVND(selected.compareAtPrice as number)}
             </span>
-            <span className="ml-auto bg-burgundy px-2 py-1 text-xs uppercase tracking-widest text-white">
+            <span className="ml-auto rounded-xs bg-burgundy px-2 py-0.5 text-[11px] font-semibold uppercase tracking-widest text-white">
               -{discountPercent}%
             </span>
           </>
@@ -59,8 +57,8 @@ export function VariantSelector({ variants }: Props) {
       {/* Chọn dung tích */}
       {variants.length > 1 && (
         <div>
-          <p className="text-xs uppercase tracking-widest text-ink-muted">Dung tích</p>
-          <div className="mt-3 flex flex-wrap gap-3">
+          <p className="text-[11px] uppercase tracking-[0.15em] text-ink-muted">Dung tích</p>
+          <div className="mt-2.5 flex flex-wrap gap-2.5">
             {variants.map((v) => {
               const active = v.id === selectedId;
               const disabled = v.stock <= 0;
@@ -71,14 +69,14 @@ export function VariantSelector({ variants }: Props) {
                   onClick={() => !disabled && setSelectedId(v.id)}
                   disabled={disabled}
                   aria-pressed={active}
-                  className={`min-w-[88px] border px-4 py-2 text-sm transition-colors ${
+                  className={`min-w-[88px] rounded-sm border px-4 py-2 text-sm transition-all duration-300 ease-luxe ${
                     active
-                      ? "border-ink bg-ink text-white"
-                      : "border-[color:var(--color-border-soft)] bg-white hover:border-ink"
+                      ? "border-ink bg-ink text-cream shadow-luxe"
+                      : "border-border-soft bg-paper hover:border-ink"
                   } ${disabled ? "cursor-not-allowed opacity-50 line-through" : ""}`}
                 >
-                  <div className="font-medium">{v.volumeMl}ml</div>
-                  <div className={`mt-0.5 text-xs ${active ? "text-cream/80" : "text-ink-muted"}`}>
+                  <div className="font-grotesk font-semibold">{v.volumeMl}ml</div>
+                  <div className={`mt-0.5 text-[11px] ${active ? "text-cream/70" : "text-ink-muted"}`}>
                     {formatVND(v.price)}
                   </div>
                 </button>
@@ -88,9 +86,13 @@ export function VariantSelector({ variants }: Props) {
         </div>
       )}
 
-      {/* Tồn kho variant đang chọn */}
-      <p className="text-sm text-ink-muted">
-        {outOfStock ? "Hết hàng" : `Còn ${selected.stock} sản phẩm — dung tích ${selected.volumeMl}ml`}
+      {/* Tồn kho */}
+      <p className="flex items-center gap-2 text-sm text-ink-muted">
+        <span
+          aria-hidden
+          className={`inline-block h-1.5 w-1.5 rounded-full ${outOfStock ? "bg-burgundy" : "bg-emerald-500 animate-pulse-soft"}`}
+        />
+        {outOfStock ? "Tạm hết hàng" : `Còn ${selected.stock} sản phẩm — dung tích ${selected.volumeMl}ml`}
       </p>
 
       <AddToCartButton variantId={selected.id} disabled={outOfStock} />

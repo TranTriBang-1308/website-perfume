@@ -46,19 +46,19 @@ export function ProductFilters({ brands, categories }: Props) {
 
   const current = (key: string) => searchParams.get(key) ?? "";
 
-  // Đếm filter đang áp dụng để hiển thị số bên cạnh "Bộ lọc"
+  // Đếm filter đang áp dụng
   const activeCount = ["brand", "category", "gender", "concentration", "onSale"].filter(
     (k) => searchParams.get(k)
   ).length;
 
   return (
-    <aside className="space-y-6 text-sm">
-      <div className="flex items-center justify-between border-b border-border-soft pb-4">
-        <h2 className="font-display text-xl text-ink">Bộ lọc</h2>
+    <aside className="space-y-5 text-sm">
+      <div className="flex items-center justify-between border-b border-border-soft pb-3">
+        <h2 className="font-grotesk text-base font-semibold text-ink">Bộ lọc</h2>
         {activeCount > 0 && (
           <button
             onClick={() => router.push(pathname)}
-            className="text-[11px] uppercase tracking-[0.2em] text-burgundy transition-colors hover:text-burgundy-light"
+            className="text-[11px] uppercase tracking-[0.15em] text-burgundy transition-colors hover:text-burgundy-light"
           >
             Xóa ({activeCount})
           </button>
@@ -105,8 +105,8 @@ type GroupProps = {
 
 function FilterGroup({ title, options, value, onChange }: GroupProps) {
   return (
-    <details open className="group border-b border-border-soft pb-5 [&_summary::-webkit-details-marker]:hidden">
-      <summary className="flex cursor-pointer items-center justify-between text-[11px] font-medium uppercase tracking-[0.25em] text-ink-muted transition-colors hover:text-ink">
+    <details open className="group border-b border-border-soft pb-4 [&_summary::-webkit-details-marker]:hidden">
+      <summary className="flex cursor-pointer items-center justify-between text-[11px] font-medium uppercase tracking-[0.15em] text-ink-muted transition-colors hover:text-ink">
         {title}
         <span className="transition-transform duration-300 group-open:rotate-180">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-3 w-3">
@@ -114,7 +114,7 @@ function FilterGroup({ title, options, value, onChange }: GroupProps) {
           </svg>
         </span>
       </summary>
-      <ul className="mt-4 space-y-2.5">
+      <ul className="mt-3 space-y-2">
         {options.map((opt) => {
           const active = value === opt.value;
           return (
@@ -127,10 +127,10 @@ function FilterGroup({ title, options, value, onChange }: GroupProps) {
               >
                 <span
                   aria-hidden
-                  className={`inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center border transition-all duration-300 ${
+                  className={`inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-xs border transition-all duration-300 ${
                     active
                       ? "border-champagne bg-champagne"
-                      : "border-border-soft bg-white group-hover:border-ink-faint"
+                      : "border-border-soft bg-paper group-hover:border-ink-faint"
                   }`}
                 >
                   {active && (
