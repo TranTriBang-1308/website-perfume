@@ -1,0 +1,78 @@
+@startuml hinh-3-2-usecase-khach-hang
+' ============================================================
+' Hình 3.2 — Sơ đồ Use Case chi tiết phía Khách hàng
+' ============================================================
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam defaultFontName "Times New Roman"
+skinparam defaultFontSize 14
+skinparam usecase {
+  BackgroundColor #FAFAF8
+  BorderColor #1D1D20
+}
+skinparam actor {
+  BackgroundColor #F3F1EC
+  BorderColor #1D1D20
+}
+
+title Hình 3.2 — Sơ đồ Use Case chi tiết phía Khách hàng
+
+actor "Khách hàng" as User
+actor "Cổng thanh toán" as Payment
+
+rectangle "Khu vực Cửa hàng (store)" {
+  package "Tài khoản" {
+    usecase "Đăng ký" as Register
+    usecase "Đăng nhập\n(Credentials/Google)" as Login
+    usecase "Đổi mật khẩu" as ChangePwd
+    usecase "Quản lý địa chỉ" as MgmtAddress
+    usecase "Xem lịch sử đơn" as ViewOrder
+  }
+
+  package "Mua sắm" {
+    usecase "Xem trang chủ" as Home
+    usecase "Lọc & sắp xếp\nsản phẩm" as Filter
+    usecase "Tìm kiếm" as Search
+    usecase "Xem chi tiết\nsản phẩm" as Detail
+    usecase "Chọn dung tích\n(variant)" as PickVariant
+    usecase "Thêm vào giỏ" as AddCart
+    usecase "Thêm wishlist" as AddWish
+  }
+
+  package "Đặt hàng" {
+    usecase "Mở giỏ hàng" as OpenCart
+    usecase "Sync giỏ guest\n→ DB" as SyncCart
+    usecase "Áp mã giảm giá" as ApplyCoupon
+    usecase "Chọn địa chỉ\ngiao hàng" as PickAddr
+    usecase "Chọn phương thức\nthanh toán" as PickMethod
+    usecase "Xác nhận đặt hàng" as Confirm
+    usecase "Đánh giá sản phẩm" as ReviewProd
+  }
+}
+
+User --> Register
+User --> Login
+User --> ChangePwd
+User --> MgmtAddress
+User --> ViewOrder
+
+User --> Home
+User --> Filter
+User --> Search
+User --> Detail
+User --> AddWish
+User --> ReviewProd
+
+Detail ..> PickVariant : <<include>>
+Detail ..> AddCart : <<extend>>
+
+User --> OpenCart
+OpenCart ..> SyncCart : <<extend>>\nkhi mới login
+OpenCart --> Confirm
+Confirm ..> ApplyCoupon : <<extend>>
+Confirm ..> PickAddr : <<include>>
+Confirm ..> PickMethod : <<include>>
+Confirm --> Payment
+
+@enduml

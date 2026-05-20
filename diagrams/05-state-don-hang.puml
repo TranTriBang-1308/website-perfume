@@ -1,0 +1,51 @@
+@startuml hinh-3-5-state-don-hang
+' ============================================================
+' Hình 3.5 — Sơ đồ trạng thái đơn hàng (OrderStatus)
+' Khớp với enum OrderStatus trong prisma/schema.prisma
+' ============================================================
+skinparam shadowing false
+skinparam defaultFontName "Times New Roman"
+skinparam defaultFontSize 14
+skinparam state {
+  BackgroundColor #FAFAF8
+  BorderColor #1D1D20
+  FontColor #0F0F10
+  StartColor #1D1D20
+  EndColor #1D1D20
+  ArrowColor #6F6F74
+}
+
+title Hình 3.5 — Sơ đồ trạng thái đơn hàng (OrderStatus)
+
+[*] --> PENDING : Khách hàng nhấn "Đặt hàng"\n(POST /api/orders)
+
+state PENDING : Đơn vừa tạo, chờ xác nhận
+state CONFIRMED : Admin đã xác nhận
+state PROCESSING : Đang đóng gói
+state SHIPPING : Đã giao đơn vị vận chuyển
+state DELIVERED : Khách đã nhận hàng
+state CANCELLED #F3F1EC : Đã huỷ
+state REFUNDED #F3F1EC : Đã hoàn tiền
+
+PENDING --> CONFIRMED : Admin xác nhận
+CONFIRMED --> PROCESSING : Bắt đầu đóng gói
+PROCESSING --> SHIPPING : Bàn giao vận chuyển
+SHIPPING --> DELIVERED : Giao thành công
+
+PENDING --> CANCELLED : Khách / Admin huỷ
+CONFIRMED --> CANCELLED : Admin huỷ\n(hết hàng, sai địa chỉ…)
+PROCESSING --> CANCELLED : Admin huỷ
+
+DELIVERED --> REFUNDED : Khách yêu cầu\nhoàn trả
+
+note right of SHIPPING
+  Sau trạng thái này
+  KHÔNG được CANCELLED.
+  Chỉ có thể chuyển sang
+  REFUNDED khi đã DELIVERED.
+end note
+
+CANCELLED --> [*]
+REFUNDED --> [*]
+
+@enduml

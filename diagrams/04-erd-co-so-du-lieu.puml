@@ -1,0 +1,227 @@
+@startuml hinh-3-4-erd
+' ============================================================
+' Hình 3.4 — Sơ đồ thực thể – mối quan hệ (ERD)
+' Khớp với prisma/schema.prisma
+' ============================================================
+hide circle
+skinparam linetype ortho
+skinparam shadowing false
+skinparam defaultFontName "Times New Roman"
+skinparam defaultFontSize 12
+skinparam class {
+  BackgroundColor #FAFAF8
+  BorderColor #1D1D20
+  HeaderBackgroundColor #E6C39C
+}
+
+title Hình 3.4 — Sơ đồ ERD cơ sở dữ liệu Website bán nước hoa
+
+' ===== Auth & User =====
+entity "User" as User {
+  *id : String <<PK>>
+  --
+  email : String <<unique>>
+  password : String?
+  name : String?
+  phone : String?
+  role : Role
+  createdAt : DateTime
+}
+
+entity "Account" as Account {
+  *id : String <<PK>>
+  --
+  userId : String <<FK>>
+  provider : String
+  providerAccountId : String
+}
+
+entity "Session" as Session {
+  *id : String <<PK>>
+  --
+  sessionToken : String <<unique>>
+  userId : String <<FK>>
+  expires : DateTime
+}
+
+entity "Address" as Address {
+  *id : String <<PK>>
+  --
+  userId : String <<FK>>
+  fullName : String
+  phone : String
+  province : String
+  district : String
+  ward : String
+  street : String
+  isDefault : Boolean
+}
+
+' ===== Catalog =====
+entity "Brand" as Brand {
+  *id : String <<PK>>
+  --
+  name : String <<unique>>
+  slug : String <<unique>>
+  logo : String?
+}
+
+entity "Category" as Category {
+  *id : String <<PK>>
+  --
+  name : String <<unique>>
+  slug : String <<unique>>
+}
+
+entity "Product" as Product {
+  *id : String <<PK>>
+  --
+  name : String
+  slug : String <<unique>>
+  description : String
+  gender : Gender
+  concentration : Concentration
+  topNotes : String?
+  middleNotes : String?
+  baseNotes : String?
+  brandId : String <<FK>>
+  categoryId : String <<FK>>
+  minPrice : Decimal
+  hasDiscount : Boolean
+  isFeatured : Boolean
+  isActive : Boolean
+}
+
+entity "ProductVariant" as Variant {
+  *id : String <<PK>>
+  --
+  productId : String <<FK>>
+  volumeMl : Int
+  price : Decimal
+  compareAtPrice : Decimal?
+  stock : Int
+  sku : String? <<unique>>
+  isDefault : Boolean
+}
+
+entity "ProductImage" as Image {
+  *id : String <<PK>>
+  --
+  productId : String <<FK>>
+  url : String
+  position : Int
+}
+
+' ===== Cart & Wishlist =====
+entity "CartItem" as Cart {
+  *id : String <<PK>>
+  --
+  userId : String <<FK>>
+  variantId : String <<FK>>
+  quantity : Int
+}
+
+entity "WishlistItem" as Wishlist {
+  *id : String <<PK>>
+  --
+  userId : String <<FK>>
+  productId : String <<FK>>
+}
+
+' ===== Order =====
+entity "Order" as Order {
+  *id : String <<PK>>
+  --
+  orderNumber : String <<unique>>
+  userId : String <<FK>>
+  addressId : String <<FK>>
+  subtotal : Decimal
+  shippingFee : Decimal
+  discount : Decimal
+  total : Decimal
+  status : OrderStatus
+  paymentStatus : PaymentStatus
+  paymentMethod : PaymentMethod
+  couponCode : String?
+}
+
+entity "OrderItem" as OrderItem {
+  *id : String <<PK>>
+  --
+  orderId : String <<FK>>
+  productId : String <<FK>>
+  variantId : String? <<FK>>
+  productName : String
+  volumeMl : Int
+  price : Decimal
+  quantity : Int
+}
+
+entity "Payment" as Payment {
+  *id : String <<PK>>
+  --
+  orderId : String <<FK>>
+  method : PaymentMethod
+  status : PaymentStatus
+  amount : Decimal
+  transactionId : String?
+}
+
+' ===== Social & Marketing =====
+entity "Review" as Review {
+  *id : String <<PK>>
+  --
+  userId : String <<FK>>
+  productId : String <<FK>>
+  rating : Int
+  comment : String?
+}
+
+entity "Coupon" as Coupon {
+  *id : String <<PK>>
+  --
+  code : String <<unique>>
+  discountType : DiscountType
+  discountValue : Decimal
+  minOrderValue : Decimal?
+  usageLimit : Int?
+  usedCount : Int
+  startsAt : DateTime
+  expiresAt : DateTime
+}
+
+entity "Banner" as Banner {
+  *id : String <<PK>>
+  --
+  title : String
+  imageUrl : String
+  ctaHref : String?
+  position : Int
+  isActive : Boolean
+}
+
+' ===== Mối quan hệ =====
+User ||--o{ Account
+User ||--o{ Session
+User ||--o{ Address
+User ||--o{ Order
+User ||--o{ Cart
+User ||--o{ Wishlist
+User ||--o{ Review
+
+Brand ||--o{ Product
+Category ||--o{ Product
+Product ||--|{ Variant
+Product ||--o{ Image
+Product ||--o{ Wishlist
+Product ||--o{ Review
+Product ||--o{ OrderItem
+
+Variant ||--o{ Cart
+Variant ||--o{ OrderItem
+
+Address ||--o{ Order
+Order ||--|{ OrderItem
+Order ||--|| Payment
+
+@enduml

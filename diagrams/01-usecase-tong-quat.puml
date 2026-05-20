@@ -1,0 +1,70 @@
+@startuml hinh-3-1-usecase-tong-quat
+' ============================================================
+' Hình 3.1 — Sơ đồ Use Case tổng quát của hệ thống
+' Website bán nước hoa — đồ án tốt nghiệp Khóa 27
+' ============================================================
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam defaultFontName "Times New Roman"
+skinparam defaultFontSize 14
+skinparam usecase {
+  BackgroundColor #FAFAF8
+  BorderColor #1D1D20
+}
+skinparam actor {
+  BackgroundColor #F3F1EC
+  BorderColor #1D1D20
+}
+
+title Hình 3.1 — Sơ đồ Use Case tổng quát hệ thống Website bán nước hoa
+
+actor "Khách vãng lai" as Guest
+actor "Khách hàng (USER)" as User
+actor "Quản trị viên\n(ADMIN)" as Admin
+actor "Cổng thanh toán\n(VNPay/MoMo)" as Payment
+actor "Dịch vụ Email\n(Resend)" as Email
+
+' Quan hệ kế thừa
+User --|> Guest
+Admin --|> User
+
+rectangle "Hệ thống Website bán nước hoa" {
+  usecase "Đăng ký tài khoản" as UC_Register
+  usecase "Đăng nhập / Đăng xuất" as UC_Login
+  usecase "Duyệt sản phẩm" as UC_Browse
+  usecase "Tìm kiếm" as UC_Search
+  usecase "Quản lý giỏ hàng" as UC_Cart
+  usecase "Đặt hàng" as UC_Order
+  usecase "Thanh toán" as UC_Pay
+  usecase "Theo dõi đơn hàng" as UC_Track
+  usecase "Đánh giá sản phẩm" as UC_Review
+  usecase "Quản lý tài khoản" as UC_Account
+
+  usecase "Quản lý sản phẩm\n& biến thể" as UC_MgmtProduct
+  usecase "Quản lý đơn hàng" as UC_MgmtOrder
+  usecase "Quản lý khuyến mãi\n& banner" as UC_MgmtMarketing
+  usecase "Báo cáo doanh thu" as UC_Report
+}
+
+Guest --> UC_Register
+Guest --> UC_Browse
+Guest --> UC_Search
+Guest --> UC_Cart
+
+User --> UC_Login
+User --> UC_Order
+User --> UC_Track
+User --> UC_Review
+User --> UC_Account
+
+Admin --> UC_MgmtProduct
+Admin --> UC_MgmtOrder
+Admin --> UC_MgmtMarketing
+Admin --> UC_Report
+
+UC_Order ..> UC_Pay : <<include>>
+UC_Pay --> Payment
+UC_Order ..> Email : gửi email\nxác nhận
+
+@enduml

@@ -1,0 +1,82 @@
+@startuml hinh-3-3-usecase-quan-tri
+' ============================================================
+' Hình 3.3 — Sơ đồ Use Case chi tiết phía Quản trị viên
+' ============================================================
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam defaultFontName "Times New Roman"
+skinparam defaultFontSize 14
+skinparam usecase {
+  BackgroundColor #FAFAF8
+  BorderColor #1D1D20
+}
+skinparam actor {
+  BackgroundColor #F3F1EC
+  BorderColor #1D1D20
+}
+
+title Hình 3.3 — Sơ đồ Use Case chi tiết phía Quản trị viên
+
+actor "Quản trị viên\n(ADMIN)" as Admin
+actor "Cloudinary" as Cloud
+actor "Hệ thống email" as Email
+
+rectangle "Khu vực Quản trị (admin)" {
+  package "Catalog" {
+    usecase "Quản lý thương hiệu" as MgmtBrand
+    usecase "Quản lý danh mục" as MgmtCategory
+    usecase "Tạo/sửa sản phẩm" as MgmtProduct
+    usecase "Quản lý biến thể\n(dung tích)" as MgmtVariant
+    usecase "Upload ảnh\nsản phẩm" as UploadImage
+  }
+
+  package "Đơn hàng" {
+    usecase "Xem danh sách\nđơn" as ListOrder
+    usecase "Xem chi tiết đơn" as ViewOrder
+    usecase "Cập nhật trạng\nthái đơn" as UpdateStatus
+    usecase "Hoàn tiền\n(REFUNDED)" as Refund
+    usecase "Gửi email\nthông báo" as SendEmail
+  }
+
+  package "Marketing" {
+    usecase "Quản lý mã\ngiảm giá" as MgmtCoupon
+    usecase "Quản lý banner\ntrang chủ" as MgmtBanner
+  }
+
+  package "Người dùng" {
+    usecase "Xem danh sách\nuser" as ListUser
+    usecase "Đổi role\nUSER ↔ ADMIN" as ChangeRole
+  }
+
+  package "Báo cáo" {
+    usecase "Doanh thu\ntheo ngày/tháng" as RevenueChart
+    usecase "Top sản phẩm\nbán chạy" as TopProduct
+    usecase "Top thương hiệu" as TopBrand
+  }
+}
+
+Admin --> MgmtBrand
+Admin --> MgmtCategory
+Admin --> MgmtProduct
+Admin --> ListOrder
+Admin --> MgmtCoupon
+Admin --> MgmtBanner
+Admin --> ListUser
+Admin --> RevenueChart
+Admin --> TopProduct
+Admin --> TopBrand
+
+MgmtProduct ..> MgmtVariant : <<include>>
+MgmtProduct ..> UploadImage : <<extend>>
+UploadImage --> Cloud
+
+ListOrder ..> ViewOrder : <<include>>
+ViewOrder ..> UpdateStatus : <<extend>>
+UpdateStatus ..> SendEmail : <<include>>
+SendEmail --> Email
+UpdateStatus ..> Refund : <<extend>>\n(chỉ khi DELIVERED)
+
+ListUser ..> ChangeRole : <<extend>>
+
+@enduml
