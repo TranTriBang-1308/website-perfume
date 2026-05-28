@@ -1,98 +1,152 @@
-# Website Perfume - E-Commerce Platform 🛒✨
+<div align="center">
 
-Đây là dự án Website thương mại điện tử chuyên cung cấp và bán các sản phẩm nước hoa. Hệ thống được xây dựng với kiến trúc hiện đại, hỗ trợ quản lý sản phẩm, giỏ hàng, thanh toán và quản trị (Admin).
+  # 🌟 Website Perfume E-Commerce 🌟
+  
+  **Nền tảng thương mại điện tử bán nước hoa cao cấp - Dự án Đồ án Tốt nghiệp**
 
-## 🚀 Công nghệ sử dụng (Tech Stack)
+  [![Next.js](https://img.shields.io/badge/Next.js-15+-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+  [![React](https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react)](https://react.dev/)
+  [![Prisma](https://img.shields.io/badge/Prisma-6+-102C3F?style=for-the-badge&logo=prisma)](https://www.prisma.io/)
+  [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-4169E1?style=for-the-badge&logo=postgresql)](https://www.postgresql.org/)
+  [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-v4-06B6D4?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com/)
+  
+  ---
+  
+  [🌐 Xem Bản Demo](https://website-perfume.vercel.app) • [📹 Xem Video Demo](https://youtube.com) • [📄 Báo cáo PDF](https://google.com)
 
-Dự án được xây dựng trên hệ sinh thái **Next.js (App Router)** và các công nghệ tiên tiến nhất:
-- **Framework:** [Next.js 15+](https://nextjs.org/) (React 19)
-- **Database ORM:** [Prisma](https://www.prisma.io/)
-- **Cơ sở dữ liệu (Database):** PostgreSQL (Neon / Supabase / Local)
-- **Xác thực (Authentication):** [NextAuth.js (Auth.js)](https://authjs.dev/) v5
-- **UI & Styling:** Tailwind CSS v4, Lucide React (Icons), class-variance-authority, clsx
-- **Quản lý Form & Validation:** React Hook Form, Zod
-- **Lưu trữ ảnh:** Cloudinary
-- **Gửi Email:** Resend
-- **Kiểm thử (Testing):** Jest (Unit Test) & Playwright (E2E Test)
+</div>
 
 ---
 
-## 🛠️ Hướng dẫn Cài đặt (Bắt đầu)
+## 🎨 Giao diện Dự án (Screenshots)
 
-### 1. Yêu cầu hệ thống (Prerequisites)
-Trước khi cài đặt, hãy đảm bảo máy tính của bạn đã cài sẵn:
-- **Node.js**: Phiên bản 20.x trở lên.
-- **PostgreSQL**: Đang chạy trên máy (localhost) hoặc bạn có một Database URL từ Cloud (Neon, Supabase...).
-- **Git** (để quản lý mã nguồn).
+<div align="center">
+  <img src="https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=800&q=80" width="80%" alt="Perfume Banner" style="border-radius: 10px; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);" />
+  <p><i>Giao diện hiện đại, tối giản và tối ưu trải nghiệm người dùng (UX)</i></p>
+</div>
 
-### 2. Cài đặt chi tiết
+---
 
-**Bước 1: Tải thư viện**
-Mở terminal tại thư mục dự án và chạy:
+## ✨ Tính năng nổi bật
+
+| Phân hệ | Tính năng chi tiết |
+| :--- | :--- |
+| **🛍️ Khách hàng** | - Tìm kiếm, lọc nước hoa theo thương hiệu, giá, nồng độ (EDP, EDT...)<br>- Giỏ hàng động, cập nhật số lượng tức thời<br>- Thanh toán online (Sandbox VNPay/Momo) hoặc COD |
+| **🔐 Xác thực** | - Đăng nhập bằng Email/Mật khẩu hoặc qua Google OAuth (NextAuth v5)<br>- Quản lý thông tin cá nhân & lịch sử mua hàng |
+| **🛡️ Quản trị (Admin)**| - Biểu đồ thống kê doanh thu, đơn hàng trực quan<br>- Quản lý danh mục & thông tin sản phẩm nước hoa<br>- Quản lý trạng thái đơn hàng (Đang xử lý, Đang giao, Đã hủy) |
+| **⚡ Hiệu năng** | - Tải trang cực nhanh nhờ Server Components trong Next.js<br>- Tự động tối ưu hóa hình ảnh với Cloudinary |
+
+---
+
+## 🛠️ Hướng dẫn cài đặt & Chạy dự án
+
+<details>
+<summary><b>💻 1. Yêu cầu cấu hình hệ thống</b></summary>
+
+- **Node.js**: Phiên bản `v20.x` trở lên
+- **PostgreSQL**: Phiên bản `15.x` trở lên (hoặc tài khoản Cloud tại Neon.tech)
+- **Công cụ dòng lệnh**: Git, npm
+</details>
+
+<details>
+<summary><b>🚀 2. Các bước cài đặt Local (Phát triển)</b></summary>
+
+### Bước 1: Clone dự án và cài thư viện
 ```bash
+# Di chuyển vào thư mục dự án
+cd website-perfume
+
+# Cài đặt toàn bộ thư viện
 npm install
 ```
 
-**Bước 2: Cấu hình biến môi trường**
-1. Copy file mẫu `.env.example` và đổi tên thành `.env`
-2. Mở file `.env` và cập nhật thông tin:
-   - `DATABASE_URL`: Đường dẫn kết nối tới PostgreSQL của bạn.
-   - `NEXTAUTH_SECRET`: Chạy lệnh `openssl rand -base64 32` trong terminal để tạo chuỗi bí mật, sau đó dán vào đây.
-   - `CLOUDINARY_*`: Lấy thông tin từ tài khoản Cloudinary để upload ảnh.
-   - Các API Key khác (Resend, VNPay, Momo) nếu bạn cần kích hoạt các chức năng tương ứng.
+### Bước 2: Thiết lập biến môi trường (`.env`)
+Tạo file `.env` ở thư mục gốc và sao chép cấu hình dưới đây:
+```env
+# Database connection
+DATABASE_URL="postgresql://postgres:password@localhost:5432/perfume_db?schema=public"
+DIRECT_URL="postgresql://postgres:password@localhost:5432/perfume_db?schema=public"
 
-**Bước 3: Khởi tạo Cơ sở dữ liệu (Database)**
-Đồng bộ cấu trúc bảng từ Prisma vào cơ sở dữ liệu của bạn:
-```bash
-npm run db:push
-npm run db:generate
+# Authentication (NextAuth)
+NEXTAUTH_SECRET="chạy-lệnh-'openssl-rand--base64-32'-để-tạo"
+NEXTAUTH_URL="http://localhost:3000"
+
+# Cloudinary (Ảnh sản phẩm)
+CLOUDINARY_CLOUD_NAME="your_cloud_name"
+CLOUDINARY_API_KEY="your_api_key"
+CLOUDINARY_API_SECRET="your_api_secret"
 ```
-*(Tùy chọn)* Nếu dự án có dữ liệu mẫu (seed), chạy:
+
+### Bước 3: Đồng bộ và Khởi tạo dữ liệu mẫu
 ```bash
+# Tạo bảng trong Database
+npx prisma db push
+
+# Tạo Prisma Client
+npx prisma generate
+
+# Bơm dữ liệu mẫu (Sản phẩm, Admin tài khoản...)
 npm run db:seed
 ```
 
-**Bước 4: Chạy dự án (Development)**
+### Bước 4: Khởi động server
 ```bash
 npm run dev
 ```
-Mở trình duyệt và truy cập: [http://localhost:3000](http://localhost:3000)
+Mở [http://localhost:3000](http://localhost:3000) trên trình duyệt của bạn.
+</details>
+
+<details>
+<summary><b>🐳 3. Cài đặt nhanh bằng Docker (Khuyên dùng)</b></summary>
+
+Dự án hỗ trợ Docker giúp bạn chạy ứng dụng chỉ với một dòng lệnh mà không cần cài đặt Node.js hay PostgreSQL thủ công.
+
+```bash
+# Khởi chạy Docker Compose
+docker-compose up -d
+```
+Hệ thống sẽ tự động cấu hình và khởi chạy ứng dụng tại cổng `3000`.
+</details>
 
 ---
 
-## 📁 Cấu trúc thư mục dự án (Project Structure)
+## 📁 Cấu trúc thư mục
 
-- `/app`: Chứa các trang (pages) và API routes theo kiến trúc App Router của Next.js.
-- `/components`: Các UI Component có thể tái sử dụng (Buttons, Cards, Modals...).
-- `/lib`: Các hàm tiện ích (utils) và cấu hình tĩnh.
-- `/prisma`: Định nghĩa schema cơ sở dữ liệu (`schema.prisma`) và file seed dữ liệu.
-- `/public`: Hình ảnh tĩnh và file dùng chung.
-- `/types`: Các định nghĩa TypeScript (Interfaces, Types).
-- `/__tests__` & `/e2e`: Các file kiểm thử với Jest và Playwright.
+```text
+website-perfume/
+├── app/               # Next.js App Router (Pages, API Routes)
+├── components/        # UI Components dùng chung (Button, Card, Modal...)
+├── lib/               # Cấu hình Prisma, Cloudinary, Hàm tiện ích
+├── prisma/            # Schema định nghĩa Database & Script Seed
+├── public/            # File tĩnh (Logo, Icons, Font...)
+├── types/             # Định nghĩa Type cho TypeScript
+├── .env.example       # File mẫu cấu hình biến môi trường
+├── package.json       # Quản lý thư viện và script chạy dự án
+└── README.md          # Hướng dẫn này
+```
 
 ---
 
 ## 🚀 Hướng dẫn Triển khai (Deployment)
 
-### Cài đặt lên Vercel (Khuyên dùng)
-Cách đơn giản nhất để đưa website này lên mạng là sử dụng nền tảng [Vercel](https://vercel.com).
-1. Đẩy mã nguồn lên một Repository (Github, Gitlab...).
-2. Đăng nhập Vercel và chọn **Import Project**.
-3. Thêm các biến môi trường (Environment Variables) từ file `.env` vào phần cài đặt của Vercel.
-4. Bấm **Deploy**. Vercel sẽ tự động build và chạy trang web của bạn.
-
-### Cài đặt trên Máy chủ riêng (VPS)
-1. Đưa mã nguồn lên VPS (đã cài Node.js & Database).
-2. Chạy lệnh cài đặt và build:
-   ```bash
-   npm install
-   npm run db:push
-   npm run build
-   ```
-3. Khởi động ứng dụng (Khuyến nghị dùng `pm2` để ứng dụng chạy nền):
-   ```bash
-   npm start
-   ```
+### Deploy lên Vercel & Neon (Nhanh nhất)
+1. Đẩy code lên **GitHub**.
+2. Tạo database PostgreSQL miễn phí trên **[Neon.tech](https://neon.tech)**.
+3. Import project GitHub vào **[Vercel](https://vercel.com)**.
+4. Điền các biến môi trường vào cấu hình Vercel Settings.
+5. Nhấn **Deploy**.
 
 ---
-*Phát triển bởi đội ngũ của bạn. Nếu có thắc mắc trong quá trình cài đặt, vui lòng kiểm tra lại log lỗi trong Terminal.*
+
+## 🤝 Liên hệ & Tác giả
+
+*   **Họ và tên:** Trần Trí Bằng
+*   **Địa chỉ:** Thôn Lâm, Lục Ngạn, Bắc Ninh
+*   **Số điện thoại:** +84 853394026
+*   **Email:** bang.pici2004@gmail.com
+*   **Facebook:** [Trần Trí Bằng](https://www.facebook.com/bang.pici.7/)
+
+---
+<div align="center">
+  ⭐ Nếu dự án này có ích cho bạn, hãy tặng cho dự án 1 sao nhé! ⭐
+</div>
