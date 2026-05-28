@@ -1,36 +1,98 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Website Perfume - E-Commerce Platform 🛒✨
 
-## Getting Started
+Đây là dự án Website thương mại điện tử chuyên cung cấp và bán các sản phẩm nước hoa. Hệ thống được xây dựng với kiến trúc hiện đại, hỗ trợ quản lý sản phẩm, giỏ hàng, thanh toán và quản trị (Admin).
 
-First, run the development server:
+## 🚀 Công nghệ sử dụng (Tech Stack)
 
+Dự án được xây dựng trên hệ sinh thái **Next.js (App Router)** và các công nghệ tiên tiến nhất:
+- **Framework:** [Next.js 15+](https://nextjs.org/) (React 19)
+- **Database ORM:** [Prisma](https://www.prisma.io/)
+- **Cơ sở dữ liệu (Database):** PostgreSQL (Neon / Supabase / Local)
+- **Xác thực (Authentication):** [NextAuth.js (Auth.js)](https://authjs.dev/) v5
+- **UI & Styling:** Tailwind CSS v4, Lucide React (Icons), class-variance-authority, clsx
+- **Quản lý Form & Validation:** React Hook Form, Zod
+- **Lưu trữ ảnh:** Cloudinary
+- **Gửi Email:** Resend
+- **Kiểm thử (Testing):** Jest (Unit Test) & Playwright (E2E Test)
+
+---
+
+## 🛠️ Hướng dẫn Cài đặt (Bắt đầu)
+
+### 1. Yêu cầu hệ thống (Prerequisites)
+Trước khi cài đặt, hãy đảm bảo máy tính của bạn đã cài sẵn:
+- **Node.js**: Phiên bản 20.x trở lên.
+- **PostgreSQL**: Đang chạy trên máy (localhost) hoặc bạn có một Database URL từ Cloud (Neon, Supabase...).
+- **Git** (để quản lý mã nguồn).
+
+### 2. Cài đặt chi tiết
+
+**Bước 1: Tải thư viện**
+Mở terminal tại thư mục dự án và chạy:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**Bước 2: Cấu hình biến môi trường**
+1. Copy file mẫu `.env.example` và đổi tên thành `.env`
+2. Mở file `.env` và cập nhật thông tin:
+   - `DATABASE_URL`: Đường dẫn kết nối tới PostgreSQL của bạn.
+   - `NEXTAUTH_SECRET`: Chạy lệnh `openssl rand -base64 32` trong terminal để tạo chuỗi bí mật, sau đó dán vào đây.
+   - `CLOUDINARY_*`: Lấy thông tin từ tài khoản Cloudinary để upload ảnh.
+   - Các API Key khác (Resend, VNPay, Momo) nếu bạn cần kích hoạt các chức năng tương ứng.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**Bước 3: Khởi tạo Cơ sở dữ liệu (Database)**
+Đồng bộ cấu trúc bảng từ Prisma vào cơ sở dữ liệu của bạn:
+```bash
+npm run db:push
+npm run db:generate
+```
+*(Tùy chọn)* Nếu dự án có dữ liệu mẫu (seed), chạy:
+```bash
+npm run db:seed
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**Bước 4: Chạy dự án (Development)**
+```bash
+npm run dev
+```
+Mở trình duyệt và truy cập: [http://localhost:3000](http://localhost:3000)
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 📁 Cấu trúc thư mục dự án (Project Structure)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `/app`: Chứa các trang (pages) và API routes theo kiến trúc App Router của Next.js.
+- `/components`: Các UI Component có thể tái sử dụng (Buttons, Cards, Modals...).
+- `/lib`: Các hàm tiện ích (utils) và cấu hình tĩnh.
+- `/prisma`: Định nghĩa schema cơ sở dữ liệu (`schema.prisma`) và file seed dữ liệu.
+- `/public`: Hình ảnh tĩnh và file dùng chung.
+- `/types`: Các định nghĩa TypeScript (Interfaces, Types).
+- `/__tests__` & `/e2e`: Các file kiểm thử với Jest và Playwright.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 🚀 Hướng dẫn Triển khai (Deployment)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Cài đặt lên Vercel (Khuyên dùng)
+Cách đơn giản nhất để đưa website này lên mạng là sử dụng nền tảng [Vercel](https://vercel.com).
+1. Đẩy mã nguồn lên một Repository (Github, Gitlab...).
+2. Đăng nhập Vercel và chọn **Import Project**.
+3. Thêm các biến môi trường (Environment Variables) từ file `.env` vào phần cài đặt của Vercel.
+4. Bấm **Deploy**. Vercel sẽ tự động build và chạy trang web của bạn.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Cài đặt trên Máy chủ riêng (VPS)
+1. Đưa mã nguồn lên VPS (đã cài Node.js & Database).
+2. Chạy lệnh cài đặt và build:
+   ```bash
+   npm install
+   npm run db:push
+   npm run build
+   ```
+3. Khởi động ứng dụng (Khuyến nghị dùng `pm2` để ứng dụng chạy nền):
+   ```bash
+   npm start
+   ```
+
+---
+*Phát triển bởi đội ngũ của bạn. Nếu có thắc mắc trong quá trình cài đặt, vui lòng kiểm tra lại log lỗi trong Terminal.*
