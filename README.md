@@ -12,7 +12,7 @@
 
 ---
 
-[🌐 Xem Bản Demo](https://website-perfume.vercel.app) • [📹 Xem Video Demo](https://youtube.com) • [📄 Báo cáo PDF](https://google.com)
+[🌐 Xem Bản Demo](https://website-perfume.vercel.app) 
 
 </div>
 
@@ -29,7 +29,7 @@
 
 ---
 
-## 🛠️ Hướng dẫn Cài đặt & Chạy dự án (Từng bước cho người mới)
+## 🛠️ Hướng dẫn Cài đặt & Chạy dự án 
 
 Nếu bạn là người mới bắt đầu và chưa từng chạy các dự án web, hãy làm theo hướng dẫn cực kỳ chi tiết dưới đây:
 
